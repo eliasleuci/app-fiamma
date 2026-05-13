@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  /* Fonts - linked to layout.tsx variables */
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+
+  /* Luxury Palette - Lino & Oro Champagne */
+  --color-gold-400: #D4B65B;
+  --color-gold-500: #C5A02E;
+  --color-gold-600: #A68626;
+
+  --color-cream-50: #FAF9F6;
+  /* Main Background */
+  --color-cream-100: #F3F1ED;
+  /* Secondary Background */
+
+  --color-stone-800: #1C1917;
+  /* Primary Text */
+  --color-stone-600: #78716C;
+  /* Secondary Text */
+}
+
+/* Base Styles */
+body {
+  background-color: var(--color-cream-50);
+  color: var(--color-stone-800);
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-serif);
+}

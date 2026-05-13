@@ -1,0 +1,96 @@
+{
+    "common": {
+        "booking": "Reservar Turno",
+        "services": "Servicios",
+        "choose_treatment": "Elige tu tratamiento",
+        "select_category": "Selecciona la categoría para ver los servicios",
+        "team": "Nuestro Equipo",
+        "gallery": "Galería",
+        "reviews": "Testimonios",
+        "faqs": "Preguntas Frecuentes",
+        "results": "Resultados Exclusivos",
+        "back": "Volver",
+        "step": "Paso",
+        "of": "de",
+        "confirm": "Confirmar",
+        "processing": "Procesando...",
+        "argentina": "Argentina",
+        "cordoba": "Córdoba",
+        "estetica_bienestar": "Cosmetología y Cosmiatría",
+        "staff_access": "acceso staff",
+        "admin_panel": "panel de control",
+        "weekend_alert": "Lo sentimos, no atendemos los fines de semana. Por favor selecciona un día hábil.",
+        "faq_default_1_q": "¿Con cuánto tiempo debo cancelar?",
+        "faq_default_1_a": "Requerimos al menos 24hs de aviso para cancelaciones sin cargo.",
+        "faq_default_2_q": "¿Qué medios de pago aceptan?",
+        "faq_default_2_a": "Efectivo y Tarjeta.",
+        "categories": {
+            "micropig": "Micropigmentación",
+            "lifting": "Lifting y Cejas",
+            "facial": "Tratamiento Facial",
+            "corporal": "Tratamiento Corporal",
+            "others": "Otros",
+            "promotions": "Promociones"
+        },
+        "offer": "Ofertas"
+    },
+    "contact": {
+        "title": "Tus Datos",
+        "subtitle": "Para confirmar la reserva",
+        "name_label": "Nombre Completo",
+        "name_placeholder": "Ej: Maria Perez",
+        "phone_label": "Teléfono",
+        "phone_placeholder": "Ej: 11 1234 5678",
+        "payment_label": "Forma de Pago",
+        "cash": "Efectivo",
+        "card": "Tarjeta de Débito/Crédito",
+        "submit": "Confirmar Reserva",
+        "error_name": "Por favor ingresa tu nombre",
+        "error_phone": "Ingresa un número de teléfono válido (mínimo 8 dígitos)"
+    },
+    "footer": {
+        "rights": "Fiamma Maniscalco ©"
+    },
+    "calendar": {
+        "title": "Selecciona Fecha y Hora",
+        "closed": "Cerrado",
+        "slots_for": "Horarios para el {day} de {month}"
+    },
+    "months": {
+        "0": "Enero",
+        "1": "Febrero",
+        "2": "Marzo",
+        "3": "Abril",
+        "4": "Mayo",
+        "5": "Junio",
+        "6": "Julio",
+        "7": "Agosto",
+        "8": "Septiembre",
+        "9": "Octubre",
+        "10": "Noviembre",
+        "11": "Diciembre"
+    },
+    "days": {
+        "0": "DO",
+        "1": "LU",
+        "2": "MA",
+        "3": "MI",
+        "4": "JU",
+        "5": "VI",
+        "6": "SA"
+    },
+    "reviews": {
+        "empty": "Sé el primero en compartir tu experiencia.",
+        "leave_review": "Dejar una Reseña",
+        "title": "Lo que dicen nuestros clientes",
+        "thanks": "¡Gracias por tu reseña!",
+        "share": "Comparte tu experiencia",
+        "name": "Nombre",
+        "name_placeholder": "Tu nombre",
+        "rating": "Puntaje",
+        "comment": "Comentario",
+        "comment_placeholder": "¿Qué servicio te realizaste? ¿Cómo te sentiste?",
+        "cancel": "Cancelar",
+        "publish": "Publicar"
+    }
+}
