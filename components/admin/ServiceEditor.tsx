@@ -74,50 +74,27 @@ export function ServiceEditor({ initialService, defaultCategory, onSave, onCance
             <div className="space-y-6">
                 <div>
                     <label className="flex items-center justify-between text-xs font-bold text-stone-400 mb-2 uppercase tracking-tighter">
-                        <span>Nombre del Servicio (ES / EN)</span>
-                        <button
-                            type="button"
-                            onClick={() => setNameEn(name)}
-                            className="text-[10px] text-gold-400 hover:text-gold-500 underline"
-                        >
-                            Copiar ES ➡ EN
-                        </button>
+                        <span>Nombre del Servicio</span>
                     </label>
-                    <div className="grid grid-cols-2 gap-4">
-                        <input
-                            required
-                            className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 placeholder:text-stone-300 focus:border-gold-300 outline-none transition-all"
-                            placeholder="ES: Microblading"
-                            value={name}
-                            onChange={e => setName(e.target.value)}
-                        />
-                        <input
-                            className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 placeholder:text-stone-300 focus:border-gold-300 outline-none transition-all"
-                            placeholder="EN: Microblading"
-                            value={nameEn}
-                            onChange={e => setNameEn(e.target.value)}
-                        />
-                    </div>
+                    <input
+                        required
+                        className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 placeholder:text-stone-300 focus:border-gold-300 outline-none transition-all"
+                        placeholder="Ej: Microblading"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                    />
                 </div>
 
                 <div>
-                    <label className="block text-xs font-bold text-stone-400 mb-2 uppercase tracking-tighter">Categoría (ES / EN)</label>
+                    <label className="block text-xs font-bold text-stone-400 mb-2 uppercase tracking-tighter">Categoría</label>
                     <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <input
-                                list="categories"
-                                className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 placeholder:text-stone-300 focus:border-gold-300 outline-none transition-all"
-                                placeholder="ES: Micropigmentación"
-                                value={category}
-                                onChange={e => setCategory(e.target.value)}
-                            />
-                            <input
-                                className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 placeholder:text-stone-300 focus:border-gold-300 outline-none transition-all"
-                                placeholder="EN: Micropigmentation"
-                                value={categoryEn}
-                                onChange={e => setCategoryEn(e.target.value)}
-                            />
-                        </div>
+                        <input
+                            list="categories"
+                            className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 placeholder:text-stone-300 focus:border-gold-300 outline-none transition-all"
+                            placeholder="Ej: Micropigmentación"
+                            value={category}
+                            onChange={e => setCategory(e.target.value)}
+                        />
                         <select
                             className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 focus:border-gold-300 outline-none appearance-none cursor-pointer"
                             value={category}
@@ -141,29 +118,14 @@ export function ServiceEditor({ initialService, defaultCategory, onSave, onCance
 
                 <div>
                     <label className="flex items-center justify-between text-xs font-bold text-stone-400 mb-2 uppercase tracking-tighter">
-                        <span>Descripción (Opcional - ES / EN)</span>
-                        <button
-                            type="button"
-                            onClick={() => setDescriptionEn(description)}
-                            className="text-[10px] text-gold-400 hover:text-gold-500 underline"
-                        >
-                            Copiar ES ➡ EN
-                        </button>
+                        <span>Descripción (Opcional)</span>
                     </label>
-                    <div className="grid grid-cols-2 gap-4">
-                        <input
-                            className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 placeholder:text-stone-300 focus:border-gold-300 outline-none transition-all"
-                            placeholder="ES: Incluye perfilado"
-                            value={description}
-                            onChange={e => setDescription(e.target.value)}
-                        />
-                        <input
-                            className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 placeholder:text-stone-300 focus:border-gold-300 outline-none transition-all"
-                            placeholder="EN: Includes shaping"
-                            value={descriptionEn}
-                            onChange={e => setDescriptionEn(e.target.value)}
-                        />
-                    </div>
+                    <input
+                        className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 placeholder:text-stone-300 focus:border-gold-300 outline-none transition-all"
+                        placeholder="Ej: Incluye perfilado"
+                        value={description}
+                        onChange={e => setDescription(e.target.value)}
+                    />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
