@@ -296,6 +296,12 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
                     // Upload to Cloud
                     await supabase.from('services').upsert(servicesToUse);
                     await supabase.from('app_config').upsert({ key: 'business_phone', value: phoneToUse });
+
+                    const savedTeam = localStorage.getItem('estetica_team');
+                    if (savedTeam) {
+                        const teamToUse = JSON.parse(savedTeam);
+                        await supabase.from('team').insert(teamToUse);
+                    }
                 } else {
                     // Cloud has data
                     setServices(servicesData || []);
@@ -474,29 +480,36 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
             .upsert({ key: 'business_phone', value: cleanPhone }, { onConflict: 'key' });
 
         if (error) {
-            console.error('Error al actualizar teléfono:', error);
+            console.error('❌ Error al actualizar teléfono:', error);
+            showNotification('Error al guardar teléfono: ' + error.message, 'error');
         } else {
-            console.log('Teléfono actualizado exitosamente:', cleanPhone);
+            console.log('✅ Teléfono actualizado exitosamente:', cleanPhone);
         }
     };
 
     const updateInstagramLink = async (link: string) => {
         setInstagramLink(link);
-        await supabase
+        const { error } = await supabase
             .from('app_config')
             .upsert({ key: 'instagram_link', value: link }, { onConflict: 'key' });
+        if (error) {
+            console.error('❌ Error al actualizar Instagram:', error);
+            showNotification('Error al guardar Instagram: ' + error.message, 'error');
+        }
     };
 
     const updateCategoryOrder = async (order: string[]) => {
         setCategoryOrder(order);
-        await supabase
+        const { error } = await supabase
             .from('app_config')
             .upsert({ key: 'category_order', value: JSON.stringify(order) }, { onConflict: 'key' });
+        if (error) console.error('❌ Error al actualizar orden:', error);
     };
 
     const updatePin = async (pin: string) => {
         setAdminPin(pin);
-        await supabase.from('app_config').upsert({ key: 'admin_pin', value: pin }, { onConflict: 'key' });
+        const { error } = await supabase.from('app_config').upsert({ key: 'admin_pin', value: pin }, { onConflict: 'key' });
+        if (error) console.error('❌ Error al actualizar PIN:', error);
     };
 
     const toggleBlockedDate = async (date: string) => {
@@ -534,24 +547,60 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
     const updateFaqs = async (newFaqs: FAQ[]) => {
         setFaqs(newFaqs);
-        await supabase.from('faqs').delete().not('id', 'is', null);
-        await supabase.from('faqs').insert(newFaqs);
+        const { error: delError } = await supabase.from('faqs').delete().not('id', 'is', null);
+        if (delError) {
+            console.error('❌ Error al limpiar FAQs:', delError);
+            showNotification('Error al sincronizar FAQs: ' + delError.message, 'error');
+            return;
+        }
+
+        const { error: insError } = await supabase.from('faqs').insert(newFaqs);
+        if (insError) {
+            console.error('❌ Error al guardar FAQs:', insError);
+            showNotification('Error al guardar FAQs: ' + insError.message, 'error');
+        } else {
+            console.log('✅ FAQs sincronizadas correctamente');
+        }
     };
 
     const updateGallery = async (images: string[]) => {
         setGalleryImages(images);
         const { error: delError } = await supabase.from('gallery').delete().not('id', 'is', null);
-        if (delError) console.error('Error al limpiar galería:', delError);
+        if (delError) {
+            console.error('❌ Error al limpiar galería:', delError);
+            showNotification('Error al sincronizar galería: ' + delError.message, 'error');
+            return;
+        }
 
         const { error: insError } = await supabase.from('gallery').insert(images.map(url => ({ image_url: url })));
-        if (insError) console.error('Error al insertar en galería:', insError);
-        else console.log('Galería sincronizada exitosamente');
+        if (insError) {
+            console.error('❌ Error al guardar galería:', insError);
+            showNotification('Error al guardar galería: ' + insError.message, 'error');
+        } else {
+            console.log('✅ Galería sincronizada exitosamente');
+            showNotification('Galería guardada con éxito', 'success');
+        }
     };
 
     const updateTeam = async (newTeam: TeamMember[]) => {
         setTeam(newTeam);
-        await supabase.from('team').delete().not('id', 'is', null);
-        await supabase.from('team').insert(newTeam);
+        localStorage.setItem('estetica_team', JSON.stringify(newTeam));
+
+        const { error: delError } = await supabase.from('team').delete().not('id', 'is', null);
+        if (delError) {
+            console.error('❌ Error al limpiar equipo:', delError);
+            showNotification('Error al sincronizar equipo: ' + delError.message, 'error');
+            return;
+        }
+
+        const { error: insError } = await supabase.from('team').insert(newTeam);
+        if (insError) {
+            console.error('❌ Error al guardar equipo:', insError);
+            showNotification('Error al guardar equipo: ' + insError.message, 'error');
+        } else {
+            console.log('✅ Equipo sincronizado correctamente');
+            showNotification('Equipo guardado con éxito', 'success');
+        }
     };
 
     const addBooking = async (booking: Booking): Promise<boolean> => {
