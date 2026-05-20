@@ -62,8 +62,8 @@ export function getSlotsForDate(date: Date, intervalMinutes: number = 30): strin
         return [];
     }
 
-    // Mon-Sat: 8:00 - 20:00
-    return generateTimeSlots(8, 20, intervalMinutes);
+    // Mon-Sat: 9:00 - 20:00
+    return generateTimeSlots(9, 20, intervalMinutes);
 }
 
 /**
@@ -217,27 +217,20 @@ export function checkAvailability(
 
     const availableStaffIds = allStaffIds.filter(id => !blockedStaffIds.includes(id));
 
+    // Fallback capacity if the team is completely empty (e.g. brand new installation)
+    const capacity = team.length === 0 ? 1 : availableStaffIds.length;
+
     // If no staff is working today, 0 capacity.
-    if (availableStaffIds.length === 0) return false;
+    if (capacity === 0) return false;
 
     // 4. Check collisions for EACH time slice of the requested duration
-    // We need to ensure that for the ENTIRE duration of the new service, 
-    // there is at least 1 person free.
-    // However, it's simpler: At any point [t] in [requestStart, requestEnd), 
-    // count active bookings. If active_bookings >= available_staff, then COLLISION.
-
-    // Check every 15 minutes interval within the requested duration
-    // This provides "fine" granularity as requested.
     for (let t = requestStart; t < requestEnd; t += 15) {
         let occupiedCount = 0;
 
         // Count who is busy at time 't'
         for (const booking of bookings) {
             // Only care about this date
-            // Note: Booking.date is ISO with timezone. We need to match YYYY-MM-DD.
             if (!booking.date.startsWith(dateStr)) continue;
-            // Ignore cancelled/absent if needed? usually 'confirmed' or 'pending' consume slots.
-            // Assuming 'absent' frees up? Safer to block if in doubt, but usually 'absent' is past.
             const status = booking.status;
             if (status === 'absent' || status === 'cancelled') continue;
 
@@ -245,7 +238,6 @@ export function checkAvailability(
             const bookingStart = minutesFromMidnight(booking.time);
 
             // Find service duration for this booking
-            // Fallback to name search for manual/legacy bookings without serviceId
             const bookingService = services.find(s => s.id === booking.serviceId) || 
                                    services.find(s => s.name.toLowerCase() === booking.serviceName?.toLowerCase());
             const bookingDuration = bookingService ? parseDuration(bookingService.duration) : 30; // Default 30 min safety
@@ -253,22 +245,17 @@ export function checkAvailability(
             const bookingEnd = bookingStart + bookingDuration;
 
             // Check overlap
-            // If the booking covers time 't'
             if (t >= bookingStart && t < bookingEnd) {
-                // This booking consumes a slot at time 't'
                 occupiedCount++;
             }
         }
 
         // Capacity Check at time 't'
-        // If occupied staff >= total available staff, then this specific 15-min slice is FULL.
-        // Therefore the whole requested service cannot start at 'time'.
         // Also check if we go past closing time (20:00 = 1200 mins)
-        // If operation hours are 8-20, we shouldn't allow a booking that ends after 20:00
         const closingTime = 20 * 60; // 1200
         if (t >= closingTime) return false;
 
-        if (occupiedCount >= availableStaffIds.length) {
+        if (occupiedCount >= capacity) {
             return false;
         }
     }
