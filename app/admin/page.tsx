@@ -18,8 +18,16 @@ import { ClientSearch } from '@/components/admin/ClientSearch';
 export default function AdminPage() {
     const { services, businessPhone, instagramLink, categoryOrder, adminPin, updateServices, updatePhone, updateInstagramLink, updateCategoryOrder } = useConfig();
 
+    const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [pinInput, setPinInput] = useState('');
+
+    React.useEffect(() => {
+        if (sessionStorage.getItem('admin_authenticated') === 'true') {
+            setIsAuthenticated(true);
+        }
+        setIsLoading(false);
+    }, []);
     const [editingService, setEditingService] = useState<Service | null>(null);
     const [isCreating, setIsCreating] = useState(false);
     const [showServices, setShowServices] = useState(false);
@@ -61,14 +69,6 @@ export default function AdminPage() {
             }
         }
     }, [services, categoryOrder, updateCategoryOrder]);
-
-    // Persist Session
-    React.useEffect(() => {
-        const savedSession = sessionStorage.getItem('admin_authenticated');
-        if (savedSession === 'true') {
-            setIsAuthenticated(true);
-        }
-    }, []);
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
@@ -201,6 +201,12 @@ export default function AdminPage() {
     const toggleCategory = (cat: string) => {
         setOpenCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-[#F8F5F2] to-[#F2EBE5]" />
+        );
+    }
 
     if (!isAuthenticated) {
         return (

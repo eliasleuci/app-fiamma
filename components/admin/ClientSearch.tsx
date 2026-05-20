@@ -29,7 +29,7 @@ export function ClientSearch() {
     const handleEditClick = (booking: Booking) => {
         let phone = booking.clientPhone || '';
         if (phone && !phone.includes('+')) {
-            phone = `+34 ${phone}`;
+            phone = `+54 ${phone}`;
         }
         setEditingBooking({ ...booking, clientPhone: phone });
     };

@@ -13,18 +13,21 @@ export default function StaffPage() {
     // Auth State
     const [selectedProId, setSelectedProId] = useState<string>('');
     const [pinInput, setPinInput] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [currentUser, setCurrentUser] = useState<TeamMember | null>(null);
     const [viewingHistory, setViewingHistory] = useState<Booking | null>(null);
 
-    // Persist Session
     React.useEffect(() => {
         const savedUser = sessionStorage.getItem('staff_user');
         if (savedUser) {
-            const user = JSON.parse(savedUser);
-            setCurrentUser(user);
-            setIsAuthenticated(true);
+            try {
+                const user = JSON.parse(savedUser);
+                setCurrentUser(user);
+                setIsAuthenticated(true);
+            } catch {}
         }
+        setIsLoading(false);
     }, []);
 
     const handleLogin = (e: React.FormEvent) => {
@@ -84,6 +87,12 @@ export default function StaffPage() {
         attended: 'Atendido',
         absent: 'Ausente',
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-cream-50" />
+        );
+    }
 
     if (!isAuthenticated) {
         return (

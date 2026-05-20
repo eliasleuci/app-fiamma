@@ -556,11 +556,22 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
     const addBooking = async (booking: Booking): Promise<boolean> => {
         try {
+            let serviceId = booking.serviceId;
+            if (!serviceId) {
+                const matched = services.find(s => s.name.toLowerCase() === booking.serviceName.toLowerCase());
+                if (matched) {
+                    serviceId = matched.id;
+                } else {
+                    showNotification('Error: No se encontró el servicio seleccionado', 'error');
+                    return false;
+                }
+            }
+
             const { error } = await supabase.from('bookings').insert({
                 id: booking.id,
                 client_name: booking.clientName,
                 client_phone: booking.clientPhone,
-                service_id: booking.serviceId,
+                service_id: serviceId,
                 service_name: booking.serviceName,
                 price: booking.price,
                 payment_method: booking.paymentMethod,
@@ -592,10 +603,16 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
     const updateBooking = async (booking: Booking): Promise<boolean> => {
         try {
+            let serviceId = booking.serviceId;
+            if (!serviceId) {
+                const matched = services.find(s => s.name.toLowerCase() === booking.serviceName.toLowerCase());
+                if (matched) serviceId = matched.id;
+            }
+
             const { error } = await supabase.from('bookings').update({
                 client_name: booking.clientName,
                 client_phone: booking.clientPhone,
-                service_id: booking.serviceId,
+                service_id: serviceId,
                 service_name: booking.serviceName,
                 price: booking.price,
                 payment_method: booking.paymentMethod,

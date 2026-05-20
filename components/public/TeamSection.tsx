@@ -23,9 +23,9 @@ export function TeamSection() {
                 {visibleTeam.map((member) => (
                     <div
                         key={member.id}
-                        className="bg-white p-6 border border-stone-100 text-center hover:shadow-lg transition-all duration-500"
+                        className="bg-white p-6 border border-stone-100 flex flex-col items-center text-center hover:shadow-lg transition-all duration-500"
                     >
-                        <div className="w-32 h-32 mx-auto mb-6 overflow-hidden grayscale hover:grayscale-0 transition-all duration-500">
+                        <div className="w-32 h-32 mb-6 overflow-hidden rounded-full grayscale hover:grayscale-0 transition-all duration-500 shrink-0">
                             {member.image ? (
                                 <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
                             ) : (

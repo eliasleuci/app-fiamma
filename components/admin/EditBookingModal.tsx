@@ -58,40 +58,17 @@ export function EditBookingModal({ booking: initialBooking, onClose, onSaveAndAd
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-[#9C8775] mb-2 uppercase">WhatsApp/Teléfono</label>
-                            <div className="flex gap-2 w-full">
-                                <select
-                                    value={editingBooking.clientPhone && editingBooking.clientPhone.includes('+') ? editingBooking.clientPhone.split(' ')[0] : '+34'}
-                                    onChange={e => {
-                                        const currentNumber = editingBooking.clientPhone ? editingBooking.clientPhone.split(' ').slice(1).join(' ') : '';
-                                        setEditingBooking({
-                                            ...editingBooking,
-                                            clientPhone: `${e.target.value} ${currentNumber}`
-                                        });
-                                    }}
-                                    className="px-2 py-3 rounded-xl bg-white border border-[#E8DED5] text-[#3E2C23] focus:border-[#B38A58] outline-none text-xs font-medium w-[90px]"
-                                >
-                                    <option value="+34">ES +34</option>
-                                    <option value="">OTRO</option>
-                                    <option value="+33">FR +33</option>
-                                    <option value="+44">GB +44</option>
-                                    <option value="+49">DE +49</option>
-                                    <option value="+39">IT +39</option>
-                                    <option value="+1">US +1</option>
-                                    <option value="+54">AR +54</option>
-                                </select>
-                                <input
-                                    type="text"
-                                    value={editingBooking.clientPhone ? (editingBooking.clientPhone.includes('+') ? editingBooking.clientPhone.split(' ').slice(1).join(' ') : editingBooking.clientPhone) : ''}
-                                    onChange={e => {
-                                        const currentCode = editingBooking.clientPhone && editingBooking.clientPhone.includes('+') ? editingBooking.clientPhone.split(' ')[0] : '+34';
-                                        setEditingBooking({
-                                            ...editingBooking,
-                                            clientPhone: `${currentCode} ${e.target.value}`
-                                        });
-                                    }}
-                                    className="flex-1 px-4 py-3 rounded-xl bg-white border border-[#E8DED5] text-[#3E2C23] focus:border-[#B38A58] outline-none w-full"
-                                />
-                            </div>
+                            <input
+                                type="text"
+                                value={editingBooking.clientPhone ? editingBooking.clientPhone.replace(/^\+54\s*/, '') : ''}
+                                onChange={e => {
+                                    setEditingBooking({
+                                        ...editingBooking,
+                                        clientPhone: `+54 ${e.target.value}`
+                                    });
+                                }}
+                                className="w-full px-4 py-3 rounded-xl bg-white border border-[#E8DED5] text-[#3E2C23] focus:border-[#B38A58] outline-none"
+                            />
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-[#9C8775] mb-2 uppercase">Servicio</label>

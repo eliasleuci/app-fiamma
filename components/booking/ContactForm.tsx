@@ -11,7 +11,6 @@ interface ContactFormProps {
 export function ContactForm({ onSubmit, onBack }: ContactFormProps) {
     const { t } = useLanguage();
     const [name, setName] = useState('');
-    const [countryCode, setCountryCode] = useState('+34');
     const [phone, setPhone] = useState('');
     const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
     const [error, setError] = useState('');
@@ -42,7 +41,7 @@ export function ContactForm({ onSubmit, onBack }: ContactFormProps) {
         // Simulate a small delay for better UX
         await new Promise(resolve => setTimeout(resolve, 800));
 
-        onSubmit(name, `${countryCode} ${phone}`, paymentMethod);
+        onSubmit(name, `+54 ${phone}`, paymentMethod);
         setIsSubmitting(false);
     };
 
@@ -83,34 +82,18 @@ export function ContactForm({ onSubmit, onBack }: ContactFormProps) {
                     <label htmlFor="phone" className="block text-sm font-medium text-stone-700 mb-1">
                         {t('contact.phone_label')}
                     </label>
-                    <div className="flex gap-2">
-                        <select
-                            value={countryCode}
-                            onChange={(e) => setCountryCode(e.target.value)}
-                            className="px-3 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 bg-stone-50 text-sm font-medium w-[110px]"
-                        >
-                            <option value="+34">ES +34</option>
-                            <option value="">OTRO</option>
-                            <option value="+33">FR +33</option>
-                            <option value="+44">GB +44</option>
-                            <option value="+49">DE +49</option>
-                            <option value="+39">IT +39</option>
-                            <option value="+1">US +1</option>
-                            <option value="+54">AR +54</option>
-                        </select>
-                        <input
-                            type="tel"
-                            id="phone"
-                            required
-                            className="flex-1 px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
-                            placeholder={t('contact.phone_placeholder')}
-                            value={phone}
-                            onChange={(e) => {
-                                setPhone(e.target.value);
-                                if (error) setError('');
-                            }}
-                        />
-                    </div>
+                    <input
+                        type="tel"
+                        id="phone"
+                        required
+                        className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
+                        placeholder={t('contact.phone_placeholder')}
+                        value={phone}
+                        onChange={(e) => {
+                            setPhone(e.target.value);
+                            if (error) setError('');
+                        }}
+                    />
                 </div>
 
                 <div>

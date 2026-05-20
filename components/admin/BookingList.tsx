@@ -23,7 +23,7 @@ export function BookingList() {
     const [isSaving, setIsSaving] = useState(false);
     const [newBooking, setNewBooking] = useState({
         clientName: '',
-        countryCode: '+34',
+        countryCode: '+54',
         clientPhone: '',
         serviceId: '', // Added serviceId for better linking
         serviceName: '',
@@ -131,10 +131,10 @@ export function BookingList() {
         if (!booking.clientPhone) return '';
 
         let phone = booking.clientPhone.replace(/\D/g, '');
-        // Si el formato original NO tenía un '+', asumimos que es un número local de España
-        // y le agregamos el 34 al principio.
+        // Si el formato original NO tenía un '+', asumimos que es un número local de Argentina
+        // y le agregamos el 54 al principio.
         if (!booking.clientPhone.includes('+')) {
-            phone = '34' + phone;
+            phone = '54' + phone;
         }
 
         // Usar formato simple DD/MM
@@ -142,12 +142,12 @@ export function BookingList() {
         const date = `${dateParts[2]}/${dateParts[1]}`;
         const time = booking.time;
 
-        const message = `Hola ${booking.clientName}! 👋 Te recordamos tu turno para *${booking.serviceName}* el día *${date}* a las *${time} hs*.
+        const message = `Hola ${booking.clientName}! Te recordamos tu turno para *${booking.serviceName}* el día *${date}* a las *${time} hs*.
 
 En cuanto al pago, por favor ten en cuenta:
-💵 Puedes pagar en efectivo o por transferencia bancaria (te daré el CBU el día de la cita).
+Puedes pagar en efectivo o por transferencia bancaria (te daré el CBU el día de la cita).
 
-Te esperamos en 📍Fiamma Maniscalco - Córdoba, Argentina`;
+Te esperamos en Fiamma Maniscalco - Córdoba, Argentina`;
 
         return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     };
@@ -352,29 +352,13 @@ Te esperamos en 📍Fiamma Maniscalco - Córdoba, Argentina`;
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-stone-400 mb-2 uppercase">WhatsApp/Teléfono</label>
-                                        <div className="flex gap-2">
-                                            <select
-                                                value={newBooking.countryCode}
-                                                onChange={e => setNewBooking({ ...newBooking, countryCode: e.target.value })}
-                                                className="px-2 py-3 rounded-xl border border-stone-200 bg-white text-xs font-medium w-[90px]"
-                                            >
-                                                <option value="+34">ES +34</option>
-                                                <option value="">OTRO</option>
-                                                <option value="+33">FR +33</option>
-                                                <option value="+44">GB +44</option>
-                                                <option value="+49">DE +49</option>
-                                                <option value="+39">IT +39</option>
-                                                <option value="+1">US +1</option>
-                                                <option value="+54">AR +54</option>
-                                            </select>
-                                            <input
-                                                type="text"
-                                                value={newBooking.clientPhone}
-                                                onChange={e => setNewBooking({ ...newBooking, clientPhone: e.target.value })}
-                                                className="flex-1 px-4 py-3 rounded-xl border border-stone-200"
-                                                placeholder="Número"
-                                            />
-                                        </div>
+                                        <input
+                                            type="text"
+                                            value={newBooking.clientPhone}
+                                            onChange={e => setNewBooking({ ...newBooking, clientPhone: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-xl border border-stone-200"
+                                            placeholder="Número"
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-stone-400 mb-2 uppercase">Servicio</label>
@@ -504,8 +488,8 @@ Te esperamos en 📍Fiamma Maniscalco - Córdoba, Argentina`;
                                                 const bookingToAdd: any = {
                                                     id: crypto.randomUUID(),
                                                     clientName: newBooking.clientName,
-                                                    clientPhone: newBooking.clientPhone ? `${newBooking.countryCode} ${newBooking.clientPhone}`.trim() : '',
-                                                    serviceId: (newBooking as any).serviceId || undefined,
+                                                    clientPhone: newBooking.clientPhone ? `+54 ${newBooking.clientPhone}`.trim() : '',
+                                                    serviceId: (newBooking as any).serviceId || services.find(s => s.name.toLowerCase() === newBooking.serviceName.toLowerCase())?.id || '',
                                                     serviceName: newBooking.serviceName,
                                                     price: newBooking.price,
                                                     paymentMethod: newBooking.paymentMethod,
@@ -522,7 +506,7 @@ Te esperamos en 📍Fiamma Maniscalco - Córdoba, Argentina`;
                                                     setIsCreating(false);
                                                     setNewBooking({
                                                         clientName: '',
-                                                        countryCode: '+34',
+        countryCode: '+54',
                                                         clientPhone: '',
                                                         serviceId: '',
                                                         serviceName: '',
@@ -552,8 +536,8 @@ Te esperamos en 📍Fiamma Maniscalco - Córdoba, Argentina`;
                                                 const bookingToAdd: any = {
                                                     id: crypto.randomUUID(),
                                                     clientName: newBooking.clientName,
-                                                    clientPhone: newBooking.clientPhone ? `${newBooking.countryCode} ${newBooking.clientPhone}`.trim() : '',
-                                                    serviceId: (newBooking as any).serviceId || undefined,
+                                                    clientPhone: newBooking.clientPhone ? `+54 ${newBooking.clientPhone}`.trim() : '',
+                                                    serviceId: (newBooking as any).serviceId || services.find(s => s.name.toLowerCase() === newBooking.serviceName.toLowerCase())?.id || '',
                                                     serviceName: newBooking.serviceName,
                                                     price: newBooking.price,
                                                     paymentMethod: newBooking.paymentMethod,
@@ -792,11 +776,11 @@ Te esperamos en 📍Fiamma Maniscalco - Córdoba, Argentina`;
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => {
-                                                    // Normalize legacy data: if phone doesn't start with +, prepend +34
+                                                    // Normalize legacy data: if phone doesn't start with +, prepend +54
                                                     // This ensures the modal parsing logic works correctly (it expects "+Code Number")
                                                     let phone = booking.clientPhone || '';
                                                     if (phone && !phone.includes('+')) {
-                                                        phone = `+34 ${phone}`;
+                                                        phone = `+54 ${phone}`;
                                                     }
 
                                                     setEditingBooking({
@@ -860,18 +844,16 @@ Te esperamos en 📍Fiamma Maniscalco - Córdoba, Argentina`;
                         setIsCreating(true);
 
                         // Parse phone number to separate country code and number
-                        let countryCode = '+34';
                         let phone = savedBooking.clientPhone || '';
 
                         if (phone.includes('+')) {
                             const parts = phone.split(' ');
-                            countryCode = parts[0];
                             phone = parts.slice(1).join(' ');
                         }
 
                         setNewBooking({
                             clientName: savedBooking.clientName,
-                            countryCode: countryCode,
+                            countryCode: '+54',
                             clientPhone: phone,
                             serviceId: '',
                             serviceName: '', // Keep empty for the new booking
