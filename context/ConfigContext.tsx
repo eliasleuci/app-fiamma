@@ -83,6 +83,16 @@ export interface Expense {
     createdAt: string;
 }
 
+export interface ProductOrder {
+    id: string;
+    productName: string;
+    costPrice: number;
+    sellingPrice: number;
+    clientName: string;
+    status: 'pending' | 'delivered' | 'cancelled';
+    date: string; // YYYY-MM-DD
+}
+
 export interface TimeBlock {
     id: string;
     date: string; // YYYY-MM-DD
@@ -106,6 +116,7 @@ interface ConfigContextType {
     clinicalRecords: ClinicalRecord[];
     expenseCategories: ExpenseCategory[];
     expenses: Expense[];
+    productOrders: ProductOrder[];
     updateServices: (services: Service[]) => void;
     updatePhone: (phone: string) => void;
     updateInstagramLink: (link: string) => void;
@@ -135,6 +146,9 @@ interface ConfigContextType {
     addExpense: (expense: Expense) => void;
     updateExpense: (expense: Expense) => void;
     deleteExpense: (id: string) => void;
+    addProductOrder: (order: ProductOrder) => void;
+    updateProductOrder: (order: ProductOrder) => void;
+    deleteProductOrder: (id: string) => void;
     importHolidays: () => void;
     resetToDefaults: () => void;
     notification: { message: string, type: 'success' | 'error' } | null;
@@ -242,6 +256,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     const [clinicalRecords, setClinicalRecords] = useState<ClinicalRecord[]>([]);
     const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
+    const [productOrders, setProductOrders] = useState<ProductOrder[]>([]);
     const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
     const showNotification = (message: string, type: 'success' | 'error') => {
@@ -314,11 +329,13 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
                         const instagramVal = configData.find((c: any) => c.key === 'instagram_link')?.value;
                         const categoryOrderVal = configData.find((c: any) => c.key === 'category_order')?.value;
                         const blockedDatesVal = configData.find((c: any) => c.key === 'blocked_dates')?.value;
+                        const productOrdersVal = configData.find((c: any) => c.key === 'product_orders')?.value;
                         if (adminPinVal) setAdminPin(adminPinVal);
                         if (phoneVal) setBusinessPhone(phoneVal.replace(/\D/g, ''));
                         if (instagramVal) setInstagramLink(instagramVal);
                         if (categoryOrderVal) setCategoryOrder(JSON.parse(categoryOrderVal));
                         if (blockedDatesVal) setBlockedDates(JSON.parse(blockedDatesVal));
+                        if (productOrdersVal) setProductOrders(JSON.parse(productOrdersVal));
                     }
                 }
 
@@ -805,6 +822,25 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         await supabase.from('expenses').delete().eq('id', id);
     };
 
+    // Product Orders CRUD
+    const addProductOrder = async (order: ProductOrder) => {
+        const newOrders = [order, ...productOrders];
+        setProductOrders(newOrders);
+        await supabase.from('app_config').upsert({ key: 'product_orders', value: JSON.stringify(newOrders) }, { onConflict: 'key' });
+    };
+
+    const updateProductOrder = async (order: ProductOrder) => {
+        const newOrders = productOrders.map(o => o.id === order.id ? order : o);
+        setProductOrders(newOrders);
+        await supabase.from('app_config').upsert({ key: 'product_orders', value: JSON.stringify(newOrders) }, { onConflict: 'key' });
+    };
+
+    const deleteProductOrder = async (id: string) => {
+        const newOrders = productOrders.filter(o => o.id !== id);
+        setProductOrders(newOrders);
+        await supabase.from('app_config').upsert({ key: 'product_orders', value: JSON.stringify(newOrders) }, { onConflict: 'key' });
+    };
+
     const importHolidays = async () => {
         const newDates = Array.from(new Set([...blockedDates, ...ARGENTINA_HOLIDAYS_2026]));
         setBlockedDates(newDates);
@@ -842,6 +878,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
             clinicalRecords,
             expenseCategories,
             expenses,
+            productOrders,
             updateServices,
             updatePhone,
             updateInstagramLink,
@@ -871,6 +908,9 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
             addExpense,
             updateExpense,
             deleteExpense,
+            addProductOrder,
+            updateProductOrder,
+            deleteProductOrder,
             importHolidays,
             resetToDefaults,
             notification,

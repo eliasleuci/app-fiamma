@@ -13,6 +13,7 @@ import { TeamManager } from '@/components/admin/TeamManager';
 import { BookingList } from '@/components/admin/BookingList';
 import { ReviewManager } from '@/components/admin/ReviewManager';
 import { ExpenseManager } from '@/components/admin/ExpenseManager';
+import { ProductManager } from '@/components/admin/ProductManager';
 import { ClientSearch } from '@/components/admin/ClientSearch';
 
 export default function AdminPage() {
@@ -445,6 +446,9 @@ export default function AdminPage() {
 
                         {/* Gastos */}
                         <ExpenseManager />
+
+                        {/* Productos */}
+                        <ProductManager />
 
                         {/* Equipo */}
                         <TeamManager />
