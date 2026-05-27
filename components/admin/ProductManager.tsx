@@ -19,17 +19,13 @@ export function ProductManager() {
     const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'delivered' | 'cancelled'>('all');
 
     // Form state
-    const [productName, setProductName] = useState('');
-    const [costPrice, setCostPrice] = useState('');
-    const [sellingPrice, setSellingPrice] = useState('');
+    const [products, setProducts] = useState([{ productName: '', costPrice: '', sellingPrice: '' }]);
     const [clientName, setClientName] = useState('');
     const [status, setStatus] = useState<'pending' | 'delivered' | 'cancelled'>('pending');
     const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0]);
 
     const resetForm = () => {
-        setProductName('');
-        setCostPrice('');
-        setSellingPrice('');
+        setProducts([{ productName: '', costPrice: '', sellingPrice: '' }]);
         setClientName('');
         setStatus('pending');
         setOrderDate(new Date().toISOString().split('T')[0]);
@@ -39,27 +35,48 @@ export function ProductManager() {
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!productName || !sellingPrice || !clientName) return;
+        if (!clientName) return;
 
         if (editingOrder) {
-            updateProductOrder({
-                ...editingOrder,
-                productName,
-                costPrice: parseFloat(costPrice) || 0,
-                sellingPrice: parseFloat(sellingPrice),
-                clientName,
-                status,
-                date: orderDate
+            products.forEach((prod, index) => {
+                if (!prod.productName || !prod.sellingPrice) return;
+                
+                if (index === 0) {
+                    // Update the existing order
+                    updateProductOrder({
+                        ...editingOrder,
+                        productName: prod.productName,
+                        costPrice: parseFloat(prod.costPrice) || 0,
+                        sellingPrice: parseFloat(prod.sellingPrice),
+                        clientName,
+                        status,
+                        date: orderDate
+                    });
+                } else {
+                    // Create new orders for additional products added during edit
+                    addProductOrder({
+                        id: Date.now().toString() + index,
+                        productName: prod.productName,
+                        costPrice: parseFloat(prod.costPrice) || 0,
+                        sellingPrice: parseFloat(prod.sellingPrice),
+                        clientName,
+                        status,
+                        date: orderDate
+                    });
+                }
             });
         } else {
-            addProductOrder({
-                id: Date.now().toString(),
-                productName,
-                costPrice: parseFloat(costPrice) || 0,
-                sellingPrice: parseFloat(sellingPrice),
-                clientName,
-                status,
-                date: orderDate
+            products.forEach((prod, index) => {
+                if (!prod.productName || !prod.sellingPrice) return;
+                addProductOrder({
+                    id: Date.now().toString() + index,
+                    productName: prod.productName,
+                    costPrice: parseFloat(prod.costPrice) || 0,
+                    sellingPrice: parseFloat(prod.sellingPrice),
+                    clientName,
+                    status,
+                    date: orderDate
+                });
             });
         }
         resetForm();
@@ -67,9 +84,11 @@ export function ProductManager() {
 
     const handleEdit = (order: ProductOrder) => {
         setEditingOrder(order);
-        setProductName(order.productName);
-        setCostPrice(order.costPrice.toString());
-        setSellingPrice(order.sellingPrice.toString());
+        setProducts([{
+            productName: order.productName,
+            costPrice: order.costPrice.toString(),
+            sellingPrice: order.sellingPrice.toString()
+        }]);
         setClientName(order.clientName);
         setStatus(order.status);
         setOrderDate(order.date);
@@ -125,55 +144,82 @@ export function ProductManager() {
 
             {isAdding && (
                 <form onSubmit={handleSave} className="bg-stone-50 p-6 rounded-2xl border border-stone-100 mb-6 space-y-4 animate-in slide-in-from-top-2">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-bold text-stone-400 mb-2 uppercase tracking-tighter">Nombre del Producto</label>
-                            <input
-                                required
-                                value={productName}
-                                onChange={e => setProductName(e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 outline-none focus:border-gold-300"
-                                placeholder="Ej: Crema Facial Anti-age"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-stone-400 mb-2 uppercase tracking-tighter">Nombre de la Clienta</label>
-                            <input
-                                required
-                                value={clientName}
-                                onChange={e => setClientName(e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 outline-none focus:border-gold-300"
-                                placeholder="Ej: María Rodríguez"
-                            />
-                        </div>
+                    <div className="mb-6">
+                        <label className="block text-xs font-bold text-stone-400 mb-2 uppercase tracking-tighter">Nombre de la Clienta</label>
+                        <input
+                            required
+                            value={clientName}
+                            onChange={e => setClientName(e.target.value)}
+                            className="w-full max-w-md px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 outline-none focus:border-gold-300"
+                            placeholder="Ej: María Rodríguez"
+                        />
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-bold text-stone-400 mb-2 uppercase tracking-tighter">Precio de Costo ($)</label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={costPrice}
-                                onChange={e => setCostPrice(e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 outline-none focus:border-gold-300"
-                                placeholder="0.00"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-stone-400 mb-2 uppercase tracking-tighter">Precio de Venta ($)</label>
-                            <input
-                                required
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={sellingPrice}
-                                onChange={e => setSellingPrice(e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 outline-none focus:border-gold-300"
-                                placeholder="0.00"
-                            />
-                        </div>
+                    <div className="space-y-3">
+                        {products.map((prod, index) => (
+                            <div key={index} className="bg-white p-4 rounded-xl border border-stone-100 relative group">
+                                {products.length > 1 && (index > 0 || !editingOrder) && (
+                                    <button type="button" onClick={() => setProducts(products.filter((_, i) => i !== index))} className="absolute top-2 right-3 p-1 text-stone-300 hover:text-red-500 transition-colors">
+                                        ✕
+                                    </button>
+                                )}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-stone-400 mb-2 uppercase tracking-tighter">Nombre del Producto</label>
+                                        <input
+                                            required
+                                            value={prod.productName}
+                                            onChange={e => {
+                                                const newProds = [...products];
+                                                newProds[index].productName = e.target.value;
+                                                setProducts(newProds);
+                                            }}
+                                            className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 outline-none focus:border-gold-300"
+                                            placeholder="Ej: Crema Facial"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-stone-400 mb-2 uppercase tracking-tighter">Precio de Costo ($)</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            value={prod.costPrice}
+                                            onChange={e => {
+                                                const newProds = [...products];
+                                                newProds[index].costPrice = e.target.value;
+                                                setProducts(newProds);
+                                            }}
+                                            className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 outline-none focus:border-gold-300"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-stone-400 mb-2 uppercase tracking-tighter">Precio de Venta ($)</label>
+                                        <input
+                                            required
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            value={prod.sellingPrice}
+                                            onChange={e => {
+                                                const newProds = [...products];
+                                                newProds[index].sellingPrice = e.target.value;
+                                                setProducts(newProds);
+                                            }}
+                                            className="w-full px-4 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 outline-none focus:border-gold-300"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="pt-2">
+                        <Button type="button" variant="goldOutline" onClick={() => setProducts([...products, { productName: '', costPrice: '', sellingPrice: '' }])} className="text-xs px-4 py-2 h-auto min-h-0">
+                            + Añadir otro producto
+                        </Button>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -236,9 +282,9 @@ export function ProductManager() {
                                     <p className="text-sm text-[#9C8775]">Clienta: <span className="font-medium text-[#3E2C23]">{order.clientName}</span></p>
                                     
                                     <div className="flex gap-4 mt-2 text-xs">
-                                        <span className="text-stone-500">Costo: <span className="font-bold text-stone-700">${order.costPrice.toFixed(2)}</span></span>
-                                        <span className="text-[#B08A57]">Venta: <span className="font-bold">${order.sellingPrice.toFixed(2)}</span></span>
-                                        <span className="text-green-600 font-medium">Ganancia: ${(order.sellingPrice - order.costPrice).toFixed(2)}</span>
+                                        <span className="text-stone-500">Costo: <span className="font-bold text-stone-700">${order.costPrice.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span></span>
+                                        <span className="text-[#B08A57]">Venta: <span className="font-bold">${order.sellingPrice.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span></span>
+                                        <span className="text-green-600 font-medium">Ganancia: ${(order.sellingPrice - order.costPrice).toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span>
                                     </div>
                                     <div className="text-xs text-stone-400 mt-2">
                                         {formatDate(order.date)}

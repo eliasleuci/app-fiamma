@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useConfig } from '@/context/ConfigContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -489,12 +490,12 @@ export default function AdminPage() {
                                     </div>
                                     <div className="mt-8 pt-8 border-t border-[#E8DED5]/50 space-y-2">
                                         <p className="text-xs text-[#9C8775] font-medium italic">Herramientas para el equipo:</p>
-                                        <a
+                                        <Link
                                             href="/staff"
-                                            className="text-sm text-[#B08A57] font-medium hover:underline"
+                                            className="text-sm text-[#B08A57] font-medium hover:underline inline-block mt-1"
                                         >
                                             Ir al Portal de Profesionales →
-                                        </a>
+                                        </Link>
                                     </div>
                                 </div>
                             </div>

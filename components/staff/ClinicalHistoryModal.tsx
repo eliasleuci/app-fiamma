@@ -13,9 +13,11 @@ interface ClinicalHistoryModalProps {
 }
 
 export function ClinicalHistoryModal({ booking, onClose, professionalName }: ClinicalHistoryModalProps) {
-    const { clinicalRecords, addClinicalRecord, deleteClinicalRecord } = useConfig();
+    const { clinicalRecords, addClinicalRecord, deleteClinicalRecord, updateClinicalRecord } = useConfig();
     const [newNote, setNewNote] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+    const [editNote, setEditNote] = useState('');
 
     // Filter records for this specific client
     const patientHistory = clinicalRecords.filter(r => r.clientPhone === booking.clientPhone);
@@ -43,6 +45,15 @@ export function ClinicalHistoryModal({ booking, onClose, professionalName }: Cli
         addClinicalRecord(record);
         setNewNote('');
         setIsSubmitting(false);
+    };
+
+    const handleUpdate = async (e: React.FormEvent, record: ClinicalRecord) => {
+        e.preventDefault();
+        if (!editNote.trim()) return;
+
+        updateClinicalRecord({ ...record, notes: editNote });
+        setEditingRecordId(null);
+        setEditNote('');
     };
 
     return (
@@ -107,16 +118,56 @@ export function ClinicalHistoryModal({ booking, onClose, professionalName }: Cli
                                             </div>
                                             <p className="text-[10px] text-stone-400">Atendido por: {record.professionalName}</p>
                                         </div>
-                                        <button
-                                            onClick={() => { if (confirm('¿Eliminar registro?')) deleteClinicalRecord(record.id); }}
-                                            className="opacity-0 group-hover:opacity-100 p-1 text-stone-200 hover:text-red-500 transition-all"
-                                        >
-                                            ✕
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    setEditingRecordId(record.id);
+                                                    setEditNote(record.notes);
+                                                }}
+                                                className="p-1 text-stone-400 hover:text-blue-500 transition-colors"
+                                                title="Editar"
+                                            >
+                                                ✎
+                                            </button>
+                                            <button
+                                                onClick={() => { if (confirm('¿Eliminar registro?')) deleteClinicalRecord(record.id); }}
+                                                className="p-1 text-stone-400 hover:text-red-500 transition-colors"
+                                                title="Eliminar"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="text-stone-600 text-sm leading-relaxed">
-                                        {record.notes}
-                                    </div>
+                                    {editingRecordId === record.id ? (
+                                        <form onSubmit={(e) => handleUpdate(e, record)} className="mt-3 space-y-3">
+                                            <textarea
+                                                value={editNote}
+                                                onChange={(e) => setEditNote(e.target.value)}
+                                                className="w-full h-24 p-3 bg-stone-50 border border-stone-200 rounded-lg outline-none focus:border-gold-300 transition-all text-stone-700 text-sm"
+                                            />
+                                            <div className="flex justify-end gap-2">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => setEditingRecordId(null)}
+                                                    className="px-3 py-1.5 text-xs"
+                                                >
+                                                    Cancelar
+                                                </Button>
+                                                <Button
+                                                    type="submit"
+                                                    disabled={!editNote.trim()}
+                                                    className="px-3 py-1.5 text-xs"
+                                                >
+                                                    Guardar
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    ) : (
+                                        <div className="text-stone-600 text-sm leading-relaxed whitespace-pre-wrap">
+                                            {record.notes}
+                                        </div>
+                                    )}
                                 </div>
                             ))
                         )}
