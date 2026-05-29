@@ -20,7 +20,12 @@ export function ClinicalHistoryModal({ booking, onClose, professionalName }: Cli
     const [editNote, setEditNote] = useState('');
 
     // Filter records for this specific client
-    const patientHistory = clinicalRecords.filter(r => r.clientPhone === booking.clientPhone);
+    const patientHistory = clinicalRecords.filter(r => {
+        if (booking.clientPhone && r.clientPhone && booking.clientPhone.trim() !== '' && r.clientPhone.trim() !== '') {
+            return r.clientPhone === booking.clientPhone;
+        }
+        return r.clientName.toLowerCase().trim() === booking.clientName.toLowerCase().trim();
+    });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

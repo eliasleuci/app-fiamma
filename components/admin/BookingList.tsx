@@ -71,21 +71,33 @@ export function BookingList() {
         }
 
         // Client Autocomplete Logic
-        if (newBooking.clientPhone.length >= 8) {
+        if (newBooking.clientPhone.length >= 8 && !newBooking.clientName) {
             const normalizedNewPhone = newBooking.clientPhone.replace(/[\s\-\+]/g, '');
             // Find the most recent booking with this phone number
             const existingBooking = [...bookings]
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 .find(b => b.clientPhone && b.clientPhone.replace(/[\s\-\+]/g, '').includes(normalizedNewPhone));
 
-            if (existingBooking && !newBooking.clientName) {
+            if (existingBooking) {
                 setNewBooking(prev => ({
                     ...prev,
                     clientName: existingBooking.clientName
                 }));
             }
+        } else if (newBooking.clientName.length >= 3 && !newBooking.clientPhone) {
+            const nameToMatch = newBooking.clientName.toLowerCase().trim();
+            const existingBooking = [...bookings]
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .find(b => b.clientName.toLowerCase().trim() === nameToMatch && b.clientPhone);
+
+            if (existingBooking) {
+                setNewBooking(prev => ({
+                    ...prev,
+                    clientPhone: existingBooking.clientPhone.replace(/^\+54\s*/, '') // Clean up +54 if it exists for simpler input
+                }));
+            }
         }
-    }, [newBooking.date, newBooking.time, newBooking.professionalId, newBooking.clientPhone, isCreating, bookings]);
+    }, [newBooking.date, newBooking.time, newBooking.professionalId, newBooking.clientPhone, newBooking.clientName, isCreating, bookings]);
 
     const getProfessionalName = (id?: string) => {
         if (!id) return 'Sin Asignar';
