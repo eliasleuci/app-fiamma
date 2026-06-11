@@ -11,7 +11,8 @@ export function ProductManager() {
         productOrders,
         addProductOrder,
         updateProductOrder,
-        deleteProductOrder
+        deleteProductOrder,
+        handleProductOrdersBatch
     } = useConfig();
 
     const [isAdding, setIsAdding] = useState(false);
@@ -37,46 +38,38 @@ export function ProductManager() {
         e.preventDefault();
         if (!clientName) return;
 
+        const validProducts = products.filter(p => p.productName && p.sellingPrice).map(p => ({
+            productName: p.productName,
+            costPrice: parseFloat(p.costPrice) || 0,
+            sellingPrice: parseFloat(p.sellingPrice) || 0
+        }));
+
+        if (validProducts.length === 0) return;
+
+        // Fallback for backwards compatibility
+        const firstProduct = validProducts[0];
+
         if (editingOrder) {
-            products.forEach((prod, index) => {
-                if (!prod.productName || !prod.sellingPrice) return;
-                
-                if (index === 0) {
-                    // Update the existing order
-                    updateProductOrder({
-                        ...editingOrder,
-                        productName: prod.productName,
-                        costPrice: parseFloat(prod.costPrice) || 0,
-                        sellingPrice: parseFloat(prod.sellingPrice),
-                        clientName,
-                        status,
-                        date: orderDate
-                    });
-                } else {
-                    // Create new orders for additional products added during edit
-                    addProductOrder({
-                        id: Date.now().toString() + index,
-                        productName: prod.productName,
-                        costPrice: parseFloat(prod.costPrice) || 0,
-                        sellingPrice: parseFloat(prod.sellingPrice),
-                        clientName,
-                        status,
-                        date: orderDate
-                    });
-                }
+            updateProductOrder({
+                ...editingOrder,
+                clientName,
+                status,
+                date: orderDate,
+                products: validProducts,
+                productName: validProducts.length === 1 ? firstProduct.productName : `Pedido de ${validProducts.length} productos`,
+                costPrice: validProducts.reduce((sum, p) => sum + p.costPrice, 0),
+                sellingPrice: validProducts.reduce((sum, p) => sum + p.sellingPrice, 0)
             });
         } else {
-            products.forEach((prod, index) => {
-                if (!prod.productName || !prod.sellingPrice) return;
-                addProductOrder({
-                    id: Date.now().toString() + index,
-                    productName: prod.productName,
-                    costPrice: parseFloat(prod.costPrice) || 0,
-                    sellingPrice: parseFloat(prod.sellingPrice),
-                    clientName,
-                    status,
-                    date: orderDate
-                });
+            addProductOrder({
+                id: Date.now().toString(),
+                clientName,
+                status,
+                date: orderDate,
+                products: validProducts,
+                productName: validProducts.length === 1 ? firstProduct.productName : `Pedido de ${validProducts.length} productos`,
+                costPrice: validProducts.reduce((sum, p) => sum + p.costPrice, 0),
+                sellingPrice: validProducts.reduce((sum, p) => sum + p.sellingPrice, 0)
             });
         }
         resetForm();
@@ -84,11 +77,21 @@ export function ProductManager() {
 
     const handleEdit = (order: ProductOrder) => {
         setEditingOrder(order);
-        setProducts([{
-            productName: order.productName,
-            costPrice: order.costPrice.toString(),
-            sellingPrice: order.sellingPrice.toString()
-        }]);
+        
+        if (order.products && order.products.length > 0) {
+            setProducts(order.products.map(p => ({
+                productName: p.productName,
+                costPrice: p.costPrice.toString(),
+                sellingPrice: p.sellingPrice.toString()
+            })));
+        } else {
+            setProducts([{
+                productName: order.productName || '',
+                costPrice: (order.costPrice || 0).toString(),
+                sellingPrice: (order.sellingPrice || 0).toString()
+            }]);
+        }
+        
         setClientName(order.clientName);
         setStatus(order.status);
         setOrderDate(order.date);
@@ -269,22 +272,38 @@ export function ProductManager() {
                         return <p className="text-center text-stone-400 italic py-10">No hay pedidos de productos para mostrar.</p>;
                     }
 
-                    return sortedOrders.map(order => (
+                    return sortedOrders.map(order => {
+                        const items = order.products && order.products.length > 0 
+                            ? order.products 
+                            : [{ productName: order.productName || '', costPrice: order.costPrice || 0, sellingPrice: order.sellingPrice || 0 }];
+                        
+                        const totalCost = items.reduce((sum, p) => sum + p.costPrice, 0);
+                        const totalSelling = items.reduce((sum, p) => sum + p.sellingPrice, 0);
+
+                        return (
                         <div key={order.id} className="bg-[#FCFAF8] p-4 rounded-xl border border-[#E8DED5] hover:border-[#B38A58]/50 hover:shadow-[0_4px_20px_rgba(179,138,88,0.08)] transition-all">
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
                                 <div className="flex-1 w-full md:pr-4">
-                                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                                        <h4 className="font-bold text-lg text-[#3E2C23]">{order.productName}</h4>
+                                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                                        <h4 className="font-bold text-lg text-[#3E2C23]">Pedido: <span className="font-medium">{order.clientName}</span></h4>
                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${getStatusColor(order.status)}`}>
                                             {getStatusLabel(order.status)}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-[#9C8775]">Clienta: <span className="font-medium text-[#3E2C23]">{order.clientName}</span></p>
                                     
-                                    <div className="flex gap-4 mt-2 text-xs">
-                                        <span className="text-stone-500">Costo: <span className="font-bold text-stone-700">${order.costPrice.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span></span>
-                                        <span className="text-[#B08A57]">Venta: <span className="font-bold">${order.sellingPrice.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span></span>
-                                        <span className="text-green-600 font-medium">Ganancia: ${(order.sellingPrice - order.costPrice).toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span>
+                                    <div className="space-y-1 mb-3 pl-2 border-l-2 border-[#E8DED5]">
+                                        {items.map((item, idx) => (
+                                            <div key={idx} className="flex justify-between text-sm">
+                                                <span className="text-[#3E2C23]">• {item.productName}</span>
+                                                <span className="text-[#9C8775] ml-4 font-medium">${item.sellingPrice.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    
+                                    <div className="flex gap-4 mt-2 text-xs bg-white p-2 rounded-lg border border-[#E8DED5] inline-flex">
+                                        <span className="text-stone-500">Costo total: <span className="font-bold text-stone-700">${totalCost.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span></span>
+                                        <span className="text-[#B08A57]">Venta total: <span className="font-bold">${totalSelling.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span></span>
+                                        <span className="text-green-600 font-medium">Ganancia: ${(totalSelling - totalCost).toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span>
                                     </div>
                                     <div className="text-xs text-stone-400 mt-2">
                                         {formatDate(order.date)}
@@ -306,7 +325,8 @@ export function ProductManager() {
                                 </div>
                             </div>
                         </div>
-                    ));
+                        );
+                    });
                 })()}
             </div>
         </Card>

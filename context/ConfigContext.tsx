@@ -83,11 +83,18 @@ export interface Expense {
     createdAt: string;
 }
 
-export interface ProductOrder {
-    id: string;
+export interface OrderItem {
     productName: string;
     costPrice: number;
     sellingPrice: number;
+}
+
+export interface ProductOrder {
+    id: string;
+    products?: OrderItem[]; // New array of products
+    productName?: string; // Legacy
+    costPrice?: number; // Legacy
+    sellingPrice?: number; // Legacy
     clientName: string;
     status: 'pending' | 'delivered' | 'cancelled';
     date: string; // YYYY-MM-DD
@@ -149,6 +156,7 @@ interface ConfigContextType {
     addProductOrder: (order: ProductOrder) => void;
     updateProductOrder: (order: ProductOrder) => void;
     deleteProductOrder: (id: string) => void;
+    handleProductOrdersBatch: (newOrders: ProductOrder[], updatedOrder?: ProductOrder) => void;
     importHolidays: () => void;
     resetToDefaults: () => void;
     notification: { message: string, type: 'success' | 'error' } | null;
@@ -841,6 +849,25 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         await supabase.from('app_config').upsert({ key: 'product_orders', value: JSON.stringify(newOrders) }, { onConflict: 'key' });
     };
 
+    const handleProductOrdersBatch = async (newOrders: ProductOrder[], updatedOrder?: ProductOrder) => {
+        setProductOrders(prev => {
+            let currentOrders = [...prev];
+            if (updatedOrder) {
+                currentOrders = currentOrders.map(o => o.id === updatedOrder.id ? updatedOrder : o);
+            }
+            if (newOrders.length > 0) {
+                currentOrders = [...newOrders, ...currentOrders];
+            }
+            // Update Supabase in the background
+            supabase.from('app_config')
+                .upsert({ key: 'product_orders', value: JSON.stringify(currentOrders) }, { onConflict: 'key' })
+                .then(({ error }) => {
+                    if (error) console.error('Error saving product orders batch:', error);
+                });
+            return currentOrders;
+        });
+    };
+
     const importHolidays = async () => {
         const newDates = Array.from(new Set([...blockedDates, ...ARGENTINA_HOLIDAYS_2026]));
         setBlockedDates(newDates);
@@ -911,6 +938,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
             addProductOrder,
             updateProductOrder,
             deleteProductOrder,
+            handleProductOrdersBatch,
             importHolidays,
             resetToDefaults,
             notification,
