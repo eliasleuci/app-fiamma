@@ -861,8 +861,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
             // Update Supabase in the background
             supabase.from('app_config')
                 .upsert({ key: 'product_orders', value: JSON.stringify(currentOrders) }, { onConflict: 'key' })
-                .then(({ error }) => {
-                    if (error) console.error('Error saving product orders batch:', error);
+                .then((res: any) => {
+                    if (res.error) console.error('Error saving product orders batch:', res.error);
                 });
             return currentOrders;
         });
