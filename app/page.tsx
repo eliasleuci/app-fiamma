@@ -7,11 +7,13 @@ import { TeamSection } from "@/components/public/TeamSection";
 import { ReviewsSection } from '@/components/public/ReviewsSection';
 import { useLanguage } from "@/context/LanguageContext";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import Confetti from "@/components/Confetti";
 
 export default function Home() {
   const { t } = useLanguage();
   return (
     <div className="min-h-screen md:flex">
+      <Confetti />
 
       {/* LEFT COLUMN: Hero Image (Desktop Fixed, Mobile Top) */}
       <div className="w-full md:w-1/2 md:h-screen md:fixed left-0 top-0 bg-[#F1EFEC] flex flex-col justify-center items-center p-8 md:p-12 z-10 relative overflow-hidden transition-colors duration-700 shadow-sm">
@@ -54,6 +56,13 @@ export default function Home() {
 
       {/* RIGHT COLUMN: Minimal Luxury Interface (52% width) */}
       <div className="w-full md:w-[52%] md:ml-auto bg-[#fdfdfc] min-h-screen">
+        {/* BANNER MUNDIALISTA */}
+        <div className="w-full bg-[#75AADB]/10 border-b border-[#75AADB]/20 py-3 px-6 text-center">
+          <p className="text-[#75AADB] text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium flex items-center justify-center gap-2">
+            <span className="text-sm">🇦🇷</span> Acompañamos a la Selección <span className="text-[#C5A02E] tracking-[0.3em] text-xs ml-1">★★★</span>
+          </p>
+        </div>
+
         <div className="px-6 py-16 md:p-24 max-w-2xl mx-auto space-y-24">
 
           {/* Top Label */}
@@ -83,7 +92,10 @@ export default function Home() {
           <FAQSection />
 
           <footer className="text-center text-[10px] text-stone-300 py-12 uppercase tracking-[0.4em] border-t border-stone-100/60">
-            <div>Fiamma Maniscalco © {new Date().getFullYear()}</div>
+            <div>
+              Fiamma Maniscalco © {new Date().getFullYear()} 
+              <span className="text-[#C5A02E] ml-2 tracking-[0.3em] text-xs opacity-90">★★★</span>
+            </div>
             <div className="mt-6 flex items-center justify-center gap-6 lowercase tracking-normal text-stone-400">
               <a href="/staff" className="hover:text-[#C5A02E] transition-colors">{t('common.staff_access')}</a>
               <span className="w-1 h-1 bg-stone-200 rounded-full"></span>
