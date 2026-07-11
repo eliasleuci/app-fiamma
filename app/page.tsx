@@ -7,13 +7,11 @@ import { TeamSection } from "@/components/public/TeamSection";
 import { ReviewsSection } from '@/components/public/ReviewsSection';
 import { useLanguage } from "@/context/LanguageContext";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
-import Confetti from "@/components/Confetti";
 
 export default function Home() {
   const { t } = useLanguage();
   return (
     <div className="min-h-screen md:flex">
-      <Confetti />
 
       {/* LEFT COLUMN: Hero Image (Desktop Fixed, Mobile Top) */}
       <div className="w-full md:w-1/2 md:h-screen md:fixed left-0 top-0 bg-[#F1EFEC] flex flex-col justify-center items-center p-8 md:p-12 z-10 relative overflow-hidden transition-colors duration-700 shadow-sm">
