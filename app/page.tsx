@@ -54,12 +54,7 @@ export default function Home() {
 
       {/* RIGHT COLUMN: Minimal Luxury Interface (52% width) */}
       <div className="w-full md:w-[52%] md:ml-auto bg-[#fdfdfc] min-h-screen">
-        {/* BANNER MUNDIALISTA */}
-        <div className="w-full bg-[#75AADB]/10 border-b border-[#75AADB]/20 py-3 px-6 text-center">
-          <p className="text-[#75AADB] text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium flex items-center justify-center gap-2">
-            <span className="text-sm">🇦🇷</span> Acompañamos a la Selección <span className="text-[#C5A02E] tracking-[0.3em] text-xs ml-1">★★★</span>
-          </p>
-        </div>
+
 
         <div className="px-6 py-16 md:p-24 max-w-2xl mx-auto space-y-24">
 
