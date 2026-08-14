@@ -256,7 +256,7 @@ export default function AdminPage() {
                     <Button variant="goldOutline" onClick={handleLogout} className="px-10 !rounded-none py-2 text-[12px]">SALIR</Button>
                 </div>
 
-                <div className="flex gap-4 mb-8">
+                <div className="flex justify-center w-full gap-2 md:gap-4 mb-8">
                     <Button variant={activeTab === 'gestion' ? 'gold' : 'goldOutline'} onClick={() => handleTabChange('gestion')} className="flex-1 md:flex-none">Gestión</Button>
                     <Button variant={activeTab === 'crm' ? 'gold' : 'goldOutline'} onClick={() => handleTabChange('crm')} className="flex-1 md:flex-none">CRM</Button>
                     <Button variant={activeTab === 'analitica' ? 'gold' : 'goldOutline'} onClick={() => handleTabChange('analitica')} className="flex-1 md:flex-none">Analítica</Button>
