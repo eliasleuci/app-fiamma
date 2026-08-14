@@ -251,7 +251,7 @@ Te esperamos en Fiamma Maniscalco - Córdoba, Argentina`;
 
     return (
         <div className="space-y-6 relative">
-            <div className="absolute -top-10 right-0">
+            <div className="flex justify-end -mb-2 mt-2">
                 <button
                     onClick={() => setIsSummaryOpen(!isSummaryOpen)}
                     className="text-[#3b82f6] hover:underline text-[10px] font-bold uppercase flex items-center gap-1"
