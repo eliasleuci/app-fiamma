@@ -16,6 +16,9 @@ import { ReviewManager } from '@/components/admin/ReviewManager';
 import { ExpenseManager } from '@/components/admin/ExpenseManager';
 import { ProductManager } from '@/components/admin/ProductManager';
 import { ClientSearch } from '@/components/admin/ClientSearch';
+import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
+import { ClientProfileManager } from '@/components/admin/ClientProfileManager';
+import { InventoryManager } from '@/components/admin/InventoryManager';
 
 export default function AdminPage() {
     const { services, businessPhone, instagramLink, categoryOrder, adminPin, updateServices, updatePhone, updateInstagramLink, updateCategoryOrder } = useConfig();
@@ -31,6 +34,19 @@ export default function AdminPage() {
         setIsLoading(false);
     }, []);
     const [editingService, setEditingService] = useState<Service | null>(null);
+    const [activeTab, setActiveTab] = useState<'gestion' | 'crm' | 'analitica'>('gestion');
+    
+    React.useEffect(() => {
+        const savedTab = sessionStorage.getItem('admin_active_tab');
+        if (savedTab === 'gestion' || savedTab === 'crm' || savedTab === 'analitica') {
+            setActiveTab(savedTab);
+        }
+    }, []);
+
+    const handleTabChange = (tab: 'gestion' | 'crm' | 'analitica') => {
+        setActiveTab(tab);
+        sessionStorage.setItem('admin_active_tab', tab);
+    };
     const [isCreating, setIsCreating] = useState(false);
     const [showServices, setShowServices] = useState(false);
     const [phoneInput, setPhoneInput] = useState(businessPhone);
@@ -240,7 +256,14 @@ export default function AdminPage() {
                     <Button variant="goldOutline" onClick={handleLogout} className="px-10 !rounded-none py-2 text-[12px]">SALIR</Button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+                <div className="flex gap-4 mb-8">
+                    <Button variant={activeTab === 'gestion' ? 'gold' : 'goldOutline'} onClick={() => handleTabChange('gestion')} className="flex-1 md:flex-none">Gestión</Button>
+                    <Button variant={activeTab === 'crm' ? 'gold' : 'goldOutline'} onClick={() => handleTabChange('crm')} className="flex-1 md:flex-none">CRM</Button>
+                    <Button variant={activeTab === 'analitica' ? 'gold' : 'goldOutline'} onClick={() => handleTabChange('analitica')} className="flex-1 md:flex-none">Analítica</Button>
+                </div>
+
+                {activeTab === 'gestion' && (
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-10 animate-in fade-in duration-500">
                     {/* Agenda - Full Width Top Row */}
                     <div className="md:col-span-12 animate-in fade-in duration-700">
                         <BookingList />
@@ -451,12 +474,18 @@ export default function AdminPage() {
                         {/* Productos */}
                         <ProductManager />
 
-                        {/* Equipo */}
+                        {/* Inventario */}
+                        <InventoryManager />
+
+                        <FAQManager />
+
+                    </div>
+
+                    {/* Right Column */}
+                    <div className="md:col-span-5 space-y-12">
                         <TeamManager />
-
-                        {/* Bloquear Fechas */}
                         <DateBlocker />
-
+                        
                         {/* Contacto */}
                         <Card>
                             <h2 className="text-2xl font-serif mb-8 text-[#3E2C23]">Contacto</h2>
@@ -500,15 +529,22 @@ export default function AdminPage() {
                                 </div>
                             </div>
                         </Card>
-                    </div>
 
-                    {/* Right Column */}
-                    <div className="md:col-span-5 space-y-12">
                         <ReviewManager />
                         <GalleryManager />
-                        <FAQManager />
                     </div>
                 </div>
+                )}
+                {activeTab === 'crm' && (
+                    <div className="animate-in fade-in duration-500">
+                        <ClientProfileManager />
+                    </div>
+                )}
+                {activeTab === 'analitica' && (
+                    <div className="animate-in fade-in duration-500">
+                        <AnalyticsDashboard />
+                    </div>
+                )}
             </div>
         </div>
     );

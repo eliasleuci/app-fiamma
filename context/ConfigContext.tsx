@@ -106,6 +106,67 @@ export interface TimeBlock {
     time: string; // HH:MM
 }
 
+
+// ─── PREMIUM MODULE INTERFACES ───────────────────────────
+
+export interface ClientProfile {
+    id: string;
+    phone: string;
+    name: string;
+    email?: string;
+    birthdate?: string; // YYYY-MM-DD
+    allergies?: string;
+    preferences?: string;
+    privateNotes?: string;
+    tags: string[];
+    totalSpent: number;
+    visitCount: number;
+    lastVisit?: string;
+    lastServiceName?: string;
+    createdAt: string;
+}
+
+export interface InventoryCategory {
+    id: string;
+    name: string;
+    description?: string;
+}
+
+export interface InventoryItem {
+    id: string;
+    categoryId: string;
+    categoryName: string;
+    name: string;
+    unit: 'ml' | 'L' | 'g' | 'kg' | 'units';
+    currentQuantity: number;
+    costPerUnit: number;
+    alertThreshold: number;
+    lastRestockDate?: string;
+    supplier?: string;
+    createdAt: string;
+}
+
+export interface ServiceInventoryCost {
+    id: string;
+    serviceId: string;
+    inventoryItemId: string;
+    inventoryItemName: string;
+    quantityUsed: number;
+    costPerUnit: number;
+}
+
+export interface AnalyticsMetrics {
+    thisMonthIncome: number;
+    lastMonthIncome: number;
+    incomeGrowthPercent: number;
+    averageTicket: number;
+    occupancyPercent: number;
+    newClientsThisMonth: number;
+    topServices: Array<{ name: string; revenue: number; count: number; profitMargin: number }>;
+    incomeByMonth: Array<{ month: string; income: number }>;
+    occupancyByProfessional: Array<{ name: string; percent: number }>;
+}
+
 interface ConfigContextType {
     services: Service[];
     businessPhone: string;
@@ -123,7 +184,14 @@ interface ConfigContextType {
     clinicalRecords: ClinicalRecord[];
     expenseCategories: ExpenseCategory[];
     expenses: Expense[];
+
     productOrders: ProductOrder[];
+    // Premium modules
+    clientProfiles: ClientProfile[];
+    inventoryCategories: InventoryCategory[];
+    inventoryItems: InventoryItem[];
+    serviceInventoryCosts: ServiceInventoryCost[];
+    analyticsMetrics: AnalyticsMetrics | null;
     updateServices: (services: Service[]) => void;
     updatePhone: (phone: string) => void;
     updateInstagramLink: (link: string) => void;
@@ -156,7 +224,24 @@ interface ConfigContextType {
     addProductOrder: (order: ProductOrder) => void;
     updateProductOrder: (order: ProductOrder) => void;
     deleteProductOrder: (id: string) => void;
+
     handleProductOrdersBatch: (newOrders: ProductOrder[], updatedOrder?: ProductOrder) => void;
+    // CRM
+    addClientProfile: (client: ClientProfile) => void;
+    updateClientProfile: (client: ClientProfile) => void;
+    deleteClientProfile: (id: string) => void;
+    // Inventory
+    addInventoryCategory: (cat: InventoryCategory) => void;
+    updateInventoryCategory: (cat: InventoryCategory) => void;
+    deleteInventoryCategory: (id: string) => void;
+    addInventoryItem: (item: InventoryItem) => void;
+    updateInventoryItem: (item: InventoryItem) => void;
+    deleteInventoryItem: (id: string) => void;
+    addServiceInventoryCost: (link: ServiceInventoryCost) => void;
+    updateServiceInventoryCost: (link: ServiceInventoryCost) => void;
+    deleteServiceInventoryCost: (id: string) => void;
+    // Analytics
+    calculateAnalytics: () => void;
     importHolidays: () => void;
     resetToDefaults: () => void;
     notification: { message: string, type: 'success' | 'error' } | null;
@@ -264,7 +349,14 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     const [clinicalRecords, setClinicalRecords] = useState<ClinicalRecord[]>([]);
     const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
+
     const [productOrders, setProductOrders] = useState<ProductOrder[]>([]);
+    // Premium module state
+    const [clientProfiles, setClientProfiles] = useState<ClientProfile[]>([]);
+    const [inventoryCategories, setInventoryCategories] = useState<InventoryCategory[]>([]);
+    const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+    const [serviceInventoryCosts, setServiceInventoryCosts] = useState<ServiceInventoryCost[]>([]);
+    const [analyticsMetrics, setAnalyticsMetrics] = useState<AnalyticsMetrics | null>(null);
     const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
     const showNotification = (message: string, type: 'success' | 'error') => {
@@ -359,7 +451,11 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
                     supabase.from('clinical_records').select('*').order('date', { ascending: false }),
                     supabase.from('gallery').select('*'),
                     supabase.from('expense_categories').select('*'),
-                    supabase.from('expenses').select('*').order('created_at', { ascending: false })
+                    supabase.from('expenses').select('*').order('created_at', { ascending: false }),
+                    supabase.from('client_profiles').select('*').order('created_at', { ascending: false }),
+                    supabase.from('inventory_categories').select('*'),
+                    supabase.from('inventory_items').select('*').order('created_at', { ascending: false }),
+                    supabase.from('service_inventory_costs').select('*')
                 ]).then(([
                     { data: faqsData },
                     { data: teamData },
@@ -368,7 +464,11 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
                     { data: clinicalData },
                     { data: galleryData },
                     { data: expenseCategoriesData },
-                    { data: expensesData }
+                    { data: expensesData },
+                    { data: clientProfilesData },
+                    { data: invCategoriesData },
+                    { data: invItemsData },
+                    { data: svcInvCostsData }
                 ]) => {
                     if (faqsData) setFaqs(faqsData);
                     if (teamData) setTeam(teamData);
@@ -409,6 +509,31 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
                             createdAt: e.created_at
                         })));
                     }
+                    if (clientProfilesData) setClientProfiles(clientProfilesData);
+                    if (invCategoriesData) setInventoryCategories(invCategoriesData);
+                    if (invItemsData) {
+                        setInventoryItems(invItemsData.map((i: any) => ({
+                            ...i,
+                            categoryId: i.category_id,
+                            categoryName: i.category_name,
+                            currentQuantity: i.current_quantity,
+                            costPerUnit: i.cost_per_unit,
+                            alertThreshold: i.alert_threshold,
+                            lastRestockDate: i.last_restock_date,
+                            supplier: i.supplier,
+                            createdAt: i.created_at
+                        })));
+                    }
+                    if (svcInvCostsData) {
+                        setServiceInventoryCosts(svcInvCostsData.map((s: any) => ({
+                            ...s,
+                            serviceId: s.service_id,
+                            inventoryItemId: s.inventory_item_id,
+                            inventoryItemName: s.inventory_item_name,
+                            quantityUsed: s.quantity_used,
+                            costPerUnit: s.cost_per_unit
+                        })));
+                    }
                 });
 
             } catch (error) {
@@ -420,8 +545,6 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         }
         loadData();
     }, []);
-
-
 
     const updateServices = async (newServices: Service[]) => {
         setServices(newServices);
@@ -868,6 +991,232 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         });
     };
 
+
+    // CRM Methods
+    const addClientProfile = async (client: ClientProfile) => {
+        setClientProfiles(prev => [client, ...prev]);
+        await supabase.from('client_profiles').insert({
+            id: client.id,
+            phone: client.phone,
+            name: client.name,
+            email: client.email,
+            birthdate: client.birthdate,
+            allergies: client.allergies,
+            preferences: client.preferences,
+            private_notes: client.privateNotes,
+            tags: client.tags,
+            total_spent: client.totalSpent,
+            visit_count: client.visitCount,
+            last_visit: client.lastVisit,
+            last_service_name: client.lastServiceName,
+            created_at: client.createdAt
+        });
+    };
+
+    const updateClientProfile = async (client: ClientProfile) => {
+        setClientProfiles(prev => prev.map(c => c.id === client.id ? client : c));
+        await supabase.from('client_profiles').update({
+            phone: client.phone,
+            name: client.name,
+            email: client.email,
+            birthdate: client.birthdate,
+            allergies: client.allergies,
+            preferences: client.preferences,
+            private_notes: client.privateNotes,
+            tags: client.tags,
+            total_spent: client.totalSpent,
+            visit_count: client.visitCount,
+            last_visit: client.lastVisit,
+            last_service_name: client.lastServiceName
+        }).eq('id', client.id);
+    };
+
+    const deleteClientProfile = async (id: string) => {
+        setClientProfiles(prev => prev.filter(c => c.id !== id));
+        await supabase.from('client_profiles').delete().eq('id', id);
+    };
+
+    // Inventory Methods
+    const addInventoryCategory = async (cat: InventoryCategory) => {
+        setInventoryCategories(prev => [...prev, cat]);
+        await supabase.from('inventory_categories').insert(cat);
+    };
+
+    const updateInventoryCategory = async (cat: InventoryCategory) => {
+        setInventoryCategories(prev => prev.map(c => c.id === cat.id ? cat : c));
+        await supabase.from('inventory_categories').update(cat).eq('id', cat.id);
+    };
+
+    const deleteInventoryCategory = async (id: string) => {
+        setInventoryCategories(prev => prev.filter(c => c.id !== id));
+        await supabase.from('inventory_categories').delete().eq('id', id);
+    };
+
+    const addInventoryItem = async (item: InventoryItem) => {
+        setInventoryItems(prev => [item, ...prev]);
+        await supabase.from('inventory_items').insert({
+            id: item.id,
+            category_id: item.categoryId,
+            category_name: item.categoryName,
+            name: item.name,
+            unit: item.unit,
+            current_quantity: item.currentQuantity,
+            cost_per_unit: item.costPerUnit,
+            alert_threshold: item.alertThreshold,
+            last_restock_date: item.lastRestockDate,
+            supplier: item.supplier,
+            created_at: item.createdAt
+        });
+    };
+
+    const updateInventoryItem = async (item: InventoryItem) => {
+        setInventoryItems(prev => prev.map(i => i.id === item.id ? item : i));
+        await supabase.from('inventory_items').update({
+            category_id: item.categoryId,
+            category_name: item.categoryName,
+            name: item.name,
+            unit: item.unit,
+            current_quantity: item.currentQuantity,
+            cost_per_unit: item.costPerUnit,
+            alert_threshold: item.alertThreshold,
+            last_restock_date: item.lastRestockDate,
+            supplier: item.supplier
+        }).eq('id', item.id);
+    };
+
+    const deleteInventoryItem = async (id: string) => {
+        setInventoryItems(prev => prev.filter(i => i.id !== id));
+        await supabase.from('inventory_items').delete().eq('id', id);
+    };
+
+    const addServiceInventoryCost = async (link: ServiceInventoryCost) => {
+        setServiceInventoryCosts(prev => [...prev, link]);
+        await supabase.from('service_inventory_costs').insert({
+            id: link.id,
+            service_id: link.serviceId,
+            inventory_item_id: link.inventoryItemId,
+            inventory_item_name: link.inventoryItemName,
+            quantity_used: link.quantityUsed,
+            cost_per_unit: link.costPerUnit
+        });
+    };
+
+    const updateServiceInventoryCost = async (link: ServiceInventoryCost) => {
+        setServiceInventoryCosts(prev => prev.map(l => l.id === link.id ? link : l));
+        await supabase.from('service_inventory_costs').update({
+            quantity_used: link.quantityUsed,
+            cost_per_unit: link.costPerUnit
+        }).eq('id', link.id);
+    };
+
+    const deleteServiceInventoryCost = async (id: string) => {
+        setServiceInventoryCosts(prev => prev.filter(l => l.id !== id));
+        await supabase.from('service_inventory_costs').delete().eq('id', id);
+    };
+
+    const calculateAnalytics = () => {
+        if (!bookings.length) return;
+
+        const thisYear = new Date().getFullYear();
+        const thisMonth = new Date().getMonth();
+
+        const attendedBookings = bookings.filter(b => b.status === 'attended' || b.status === 'confirmed');
+
+        // This month income
+        const thisMonthBookings = attendedBookings.filter(b => {
+            const d = new Date(b.date);
+            return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+        });
+        const thisMonthIncome = thisMonthBookings.reduce((sum, b) => sum + (b.price || 0), 0);
+
+        // Last month income
+        const lastMonthDate = new Date(thisYear, thisMonth - 1, 1);
+        const lastMonthBookings = attendedBookings.filter(b => {
+            const d = new Date(b.date);
+            return d.getMonth() === lastMonthDate.getMonth() && d.getFullYear() === lastMonthDate.getFullYear();
+        });
+        const lastMonthIncome = lastMonthBookings.reduce((sum, b) => sum + (b.price || 0), 0);
+
+        // Growth percent
+        const incomeGrowthPercent = lastMonthIncome > 0
+            ? ((thisMonthIncome - lastMonthIncome) / lastMonthIncome) * 100
+            : thisMonthIncome > 0 ? 100 : 0;
+
+        // Average ticket
+        const averageTicket = thisMonthBookings.length > 0
+            ? thisMonthIncome / thisMonthBookings.length
+            : 0;
+
+        // New clients this month (first booking ever in this month)
+        const allClientPhones = new Set(attendedBookings.filter(b => {
+            const d = new Date(b.date);
+            return d < new Date(thisYear, thisMonth, 1);
+        }).map(b => b.clientPhone));
+        const newClientsThisMonth = thisMonthBookings.filter(b => !allClientPhones.has(b.clientPhone)).length;
+
+        // Top services
+        const serviceMap = new Map<string, { revenue: number; count: number }>();
+        thisMonthBookings.forEach(b => {
+            const existing = serviceMap.get(b.serviceName) || { revenue: 0, count: 0 };
+            serviceMap.set(b.serviceName, {
+                revenue: existing.revenue + (b.price || 0),
+                count: existing.count + 1
+            });
+        });
+        const topServices = Array.from(serviceMap.entries())
+            .map(([name, data]) => {
+                const service = services.find(s => s.name === name);
+                const costs = service ? serviceInventoryCosts.filter(c => c.serviceId === service.id) : [];
+                const totalCost = costs.reduce((sum, c) => sum + (c.quantityUsed * c.costPerUnit), 0);
+                const avgPrice = data.revenue / data.count;
+                const profitMargin = avgPrice > 0 ? ((avgPrice - totalCost) / avgPrice) * 100 : 100;
+                return { name, revenue: data.revenue, count: data.count, profitMargin };
+            })
+            .sort((a, b) => b.revenue - a.revenue)
+            .slice(0, 5);
+
+        // Income by month (last 12 months)
+        const incomeByMonth: Array<{ month: string; income: number }> = [];
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(thisYear, thisMonth - i, 1);
+            const monthBookings = attendedBookings.filter(b => {
+                const bd = new Date(b.date);
+                return bd.getMonth() === d.getMonth() && bd.getFullYear() === d.getFullYear();
+            });
+            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            incomeByMonth.push({
+                month: monthNames[d.getMonth()],
+                income: monthBookings.reduce((sum, b) => sum + (b.price || 0), 0)
+            });
+        }
+
+        // Occupancy by professional (this month)
+        const occupancyByProfessional: Array<{ name: string; percent: number }> = [];
+        const teamMembers = team.filter(t => t.showOnHome !== false);
+        teamMembers.forEach(member => {
+            const memberBookings = thisMonthBookings.filter(b => b.professionalId === member.id);
+            const maxSlots = 22 * 8;
+            const percent = maxSlots > 0 ? (memberBookings.length / maxSlots) * 100 : 0;
+            occupancyByProfessional.push({ name: member.name, percent: Math.min(percent, 100) });
+        });
+
+        // Occupancy overall
+        const totalSlots = teamMembers.length > 0 ? teamMembers.length * 22 * 8 : 22 * 8;
+        const occupancyPercent = totalSlots > 0 ? (thisMonthBookings.length / totalSlots) * 100 : 0;
+
+        setAnalyticsMetrics({
+            thisMonthIncome,
+            lastMonthIncome,
+            incomeGrowthPercent,
+            averageTicket,
+            occupancyPercent: Math.min(occupancyPercent, 100),
+            newClientsThisMonth,
+            topServices,
+            incomeByMonth,
+            occupancyByProfessional
+        });
+    };
+
     const importHolidays = async () => {
         const newDates = Array.from(new Set([...blockedDates, ...ARGENTINA_HOLIDAYS_2026]));
         setBlockedDates(newDates);
@@ -906,6 +1255,11 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
             expenseCategories,
             expenses,
             productOrders,
+            clientProfiles,
+            inventoryCategories,
+            inventoryItems,
+            serviceInventoryCosts,
+            analyticsMetrics,
             updateServices,
             updatePhone,
             updateInstagramLink,
@@ -939,6 +1293,19 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
             updateProductOrder,
             deleteProductOrder,
             handleProductOrdersBatch,
+            addClientProfile,
+            updateClientProfile,
+            deleteClientProfile,
+            addInventoryCategory,
+            updateInventoryCategory,
+            deleteInventoryCategory,
+            addInventoryItem,
+            updateInventoryItem,
+            deleteInventoryItem,
+            addServiceInventoryCost,
+            updateServiceInventoryCost,
+            deleteServiceInventoryCost,
+            calculateAnalytics,
             importHolidays,
             resetToDefaults,
             notification,

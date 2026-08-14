@@ -6,10 +6,17 @@ import { useConfig } from '@/context/ConfigContext';
 
 export function SocialLinks() {
     const { businessPhone, instagramLink } = useConfig();
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Clean phone for WhatsApp link
     const cleanPhone = businessPhone.replace(/\D/g, '');
     const whatsappUrl = `https://wa.me/${cleanPhone}`;
+
+    if (!mounted) return null;
 
     return (
         <div className="fixed bottom-6 right-6 flex flex-col gap-4 z-50">
