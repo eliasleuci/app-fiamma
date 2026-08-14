@@ -250,8 +250,8 @@ Te esperamos en Fiamma Maniscalco - Córdoba, Argentina`;
     const cardExpensesTotal = cardExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
 
     return (
-        <div className="space-y-6 relative">
-            <div className="flex justify-center w-full -mb-2 mt-2">
+        <div className="space-y-6">
+            <div className="flex justify-center w-full mb-2">
                 <button
                     onClick={() => setIsSummaryOpen(!isSummaryOpen)}
                     className="text-[#3b82f6] hover:underline text-[10px] font-bold uppercase flex items-center gap-1"
