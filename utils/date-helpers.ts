@@ -5,7 +5,7 @@ export const MONTHS = [
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
-const SPAIN_TZ = 'Europe/Madrid';
+const LOCAL_TZ = 'America/Argentina/Buenos_Aires';
 
 export function getDaysInMonth(year: number, month: number): number {
     return new Date(year, month + 1, 0).getDate();
@@ -16,10 +16,17 @@ export function getFirstDayOfMonth(year: number, month: number): number {
 }
 
 /**
- * Returns the current date/time anchored to Spain timezone
+ * Returns the current date/time anchored to local timezone
  */
-export function getSpainNow(): Date {
-    return new Date(new Date().toLocaleString('en-US', { timeZone: SPAIN_TZ }));
+export function getLocalNow(): Date {
+    return new Date(new Date().toLocaleString('en-US', { timeZone: LOCAL_TZ }));
+}
+
+/**
+ * Returns the current local date as a YYYY-MM-DD string
+ */
+export function getCurrentDateString(): string {
+    return toLocalDateString(getLocalNow());
 }
 
 /**
@@ -33,8 +40,8 @@ export function formatDate(date: Date | string): string {
         // Extract YYYY-MM-DD from ISO string (e.g., "2025-12-29T14:00:00+01:00")
         dateStr = date.split('T')[0];
     } else {
-        // For Date objects, convert to Spain timezone first
-        dateStr = toSpainDateString(date);
+        // For Date objects, convert to local timezone first
+        dateStr = toLocalDateString(date);
     }
 
     // Parse the YYYY-MM-DD string
@@ -55,7 +62,7 @@ export function generateTimeSlots(startHour: number = 8, endHour: number = 20, i
 }
 
 export function getSlotsForDate(date: Date, intervalMinutes: number = 30): string[] {
-    const localizedDate = new Date(date.toLocaleString('en-US', { timeZone: SPAIN_TZ }));
+    const localizedDate = new Date(date.toLocaleString('en-US', { timeZone: LOCAL_TZ }));
     const day = localizedDate.getDay();
 
     if (day === 0) { // Sunday
@@ -67,10 +74,10 @@ export function getSlotsForDate(date: Date, intervalMinutes: number = 30): strin
 }
 
 /**
- * Checks if a date is a Spanish national holiday (2025/2026 common)
+ * Checks if a date is a local national holiday
  */
-export function isSpanishHoliday(date: Date): boolean {
-    const dateStr = toSpainDateString(date);
+export function isLocalHoliday(date: Date): boolean {
+    const dateStr = toLocalDateString(date);
     const [, month, day] = dateStr.split('-').map(Number);
 
     // Static list of major Spanish National holidays (Month is 1-indexed from string)
@@ -91,40 +98,40 @@ export function isSpanishHoliday(date: Date): boolean {
 }
 
 /**
- * Checks if two dates are the same day in Spain timezone
+ * Checks if two dates are the same day in local timezone
  */
 export function isSameDay(d1: Date, d2: Date): boolean {
-    const s1 = toSpainDateString(d1);
-    const s2 = toSpainDateString(d2);
+    const s1 = toLocalDateString(d1);
+    const s2 = toLocalDateString(d2);
     return s1 === s2;
 }
 
 /**
- * Checks if a date is in the past relative to Spain "today"
+ * Checks if a date is in the past relative to local "today"
  */
 export function isPastDate(date: Date): boolean {
-    const todayStr = toSpainDateString(getSpainNow());
-    const dateStr = toSpainDateString(date);
+    const todayStr = toLocalDateString(getLocalNow());
+    const dateStr = toLocalDateString(date);
 
     // Compare YYYY-MM-DD strings to ignore time
     return dateStr < todayStr;
 }
 
 /**
- * Checks if a date falls on a weekend in Spain timezone
+ * Checks if a date falls on a weekend in local timezone
  */
 export function isWeekend(date: Date): boolean {
-    const localizedDate = new Date(date.toLocaleString('en-US', { timeZone: SPAIN_TZ }));
+    const localizedDate = new Date(date.toLocaleString('en-US', { timeZone: LOCAL_TZ }));
     const day = localizedDate.getDay();
     return day === 0; // 0 = Sunday. Saturday (6) is now enabled.
 }
 
 /**
- * Returns a date string in YYYY-MM-DD format based on Spain timezone
+ * Returns a date string in YYYY-MM-DD format based on local timezone
  */
-export function toSpainDateString(date: Date): string {
+export function toLocalDateString(date: Date): string {
     const options: Intl.DateTimeFormatOptions = {
-        timeZone: SPAIN_TZ,
+        timeZone: LOCAL_TZ,
         year: 'numeric',
         month: '2-digit',
         day: '2-digit'
@@ -135,13 +142,12 @@ export function toSpainDateString(date: Date): string {
 
 
 /**
- * Normalizes a date to 00:00:00 in Spain timezone for comparison
+ * Normalizes a date to 00:00:00 in local timezone for comparison
  */
-export function normalizeToSpain(date: Date): Date {
-    const dateStr = toSpainDateString(date);
-    // Standard Spain offset is +01:00 (CET) or +02:00 (CEST)
-    // For simplicity, we use the date anchor.
-    return new Date(`${dateStr}T00:00:00+01:00`);
+export function normalizeToLocal(date: Date): Date {
+    const dateStr = toLocalDateString(date);
+    // Use ISO format to avoid timezone offsets in the normalized date
+    return new Date(`${dateStr}T00:00:00-03:00`);
 }
 
 /**
@@ -199,7 +205,7 @@ export function checkAvailability(
     team: any[],     // Type 'TeamMember'
     professionalBlocks: any[] // Type 'ProfessionalBlock'
 ): boolean {
-    const dateStr = toSpainDateString(date);
+    const dateStr = toLocalDateString(date);
 
     // 1. Calculate requested time range [start, end)
     const requestStart = minutesFromMidnight(time);

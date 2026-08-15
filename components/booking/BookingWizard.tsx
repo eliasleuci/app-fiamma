@@ -20,7 +20,7 @@ export function BookingWizard() {
     // Since we are fixing this, let's keep the require format if it works or move to top level.
     // Moving to top level might cause circular deps if not careful, but utils is usually safe.
     // For safety in this edit, I will stick to what works but clean up the hook usage.)
-    const { parseDuration, minutesFromMidnight, toSpainDateString, isWeekend } = require('@/utils/date-helpers');
+    const { parseDuration, minutesFromMidnight, toLocalDateString, isWeekend } = require('@/utils/date-helpers');
 
     const [mounted, setMounted] = React.useState(false);
     const [step, setStep] = useState<Step>('service');
@@ -54,7 +54,7 @@ export function BookingWizard() {
             }
 
             // Assign Random Professional Logic
-            const dateStr = toSpainDateString(data.date);
+            const dateStr = toLocalDateString(data.date);
 
             // 1. Filter team members who are NOT blocked on this date (Vacations/Days Off)
             const availableProfessionals = team.filter(pro => {
@@ -116,7 +116,7 @@ export function BookingWizard() {
                 clientPhone: phone,
                 serviceId: data.service.id,
                 serviceName: data.service.name,
-                date: finalDateString, // Store with Argentina timezone offset - Wait, currently using Spain +01:00 logic in other places
+                date: finalDateString, // Store with Argentina timezone offset
                 time: data.time,
                 createdAt: new Date().toISOString(),
                 status: 'confirmed', // Auto-confirm for now? Or pending? Context default was pending.

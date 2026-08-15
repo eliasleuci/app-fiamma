@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useConfig, ExpenseCategory, Expense } from '@/context/ConfigContext';
+import { getCurrentDateString } from '@/utils/date-helpers';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { formatDate } from '@/utils/date-helpers';
@@ -32,7 +33,7 @@ export function ExpenseManager() {
     const [expenseCategoryId, setExpenseCategoryId] = useState('');
     const [expenseAmount, setExpenseAmount] = useState('');
     const [expenseDescription, setExpenseDescription] = useState('');
-    const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]);
+    const [expenseDate, setExpenseDate] = useState(getCurrentDateString());
     const [expensePaymentMethod, setExpensePaymentMethod] = useState<'cash' | 'card' | 'transfer'>('cash');
 
     const resetCategoryForm = () => {
@@ -46,7 +47,7 @@ export function ExpenseManager() {
         setExpenseCategoryId('');
         setExpenseAmount('');
         setExpenseDescription('');
-        setExpenseDate(new Date().toISOString().split('T')[0]);
+        setExpenseDate(getCurrentDateString());
         setExpensePaymentMethod('cash');
         setIsAddingExpense(false);
         setEditingExpense(null);

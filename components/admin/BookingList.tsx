@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useConfig, Booking } from '@/context/ConfigContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { formatDate, getSlotsForDate, checkAvailability, parseDuration } from '@/utils/date-helpers';
+import { formatDate, getSlotsForDate, checkAvailability, parseDuration, getCurrentDateString } from '@/utils/date-helpers';
 import { ClinicalHistoryModal } from '../staff/ClinicalHistoryModal';
 import { EditBookingModal } from './EditBookingModal';
 
@@ -12,8 +12,8 @@ export function BookingList() {
     const { bookings, deleteBooking, updateBookingStatus, team, services, addBooking, updateBooking, professionalBlocks, expenses } = useConfig();
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [isSummaryOpen, setIsSummaryOpen] = useState(false);
-    const [selectedSummaryDate, setSelectedSummaryDate] = useState(new Date().toISOString().split('T')[0]);
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [selectedSummaryDate, setSelectedSummaryDate] = useState(getCurrentDateString());
+    const [selectedDate, setSelectedDate] = useState(getCurrentDateString());
     const [viewingHistory, setViewingHistory] = useState<Booking | null>(null);
     const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
     const [showHistorical, setShowHistorical] = useState(false);
@@ -29,7 +29,7 @@ export function BookingList() {
         serviceName: '',
         price: '' as any,
         professionalId: '',
-        date: new Date().toISOString().split('T')[0],
+        date: getCurrentDateString(),
         time: '10:00',
         paymentMethod: 'cash' as 'cash' | 'card'
     });
@@ -524,7 +524,7 @@ Te esperamos en Fiamma Maniscalco - Córdoba, Argentina`;
                                                         serviceName: '',
                                                         price: '' as any,
                                                         professionalId: '',
-                                                        date: new Date().toISOString().split('T')[0],
+                                                        date: getCurrentDateString(),
                                                         time: '10:00',
                                                         paymentMethod: 'cash'
                                                     });

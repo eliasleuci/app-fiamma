@@ -9,9 +9,9 @@ import {
     isSameDay,
     isPastDate,
     isWeekend,
-    isSpanishHoliday,
-    toSpainDateString,
-    getSpainNow,
+    isLocalHoliday,
+    toLocalDateString,
+    getLocalNow,
     getSlotsForDate,
     checkAvailability
 } from '@/utils/date-helpers';
@@ -50,9 +50,9 @@ export function Calendar({ onSelect, onBack, currentServiceDuration = 30 }: Cale
 
     const handleDateClick = (day: number) => {
         const date = new Date(year, month, day);
-        const dateStr = toSpainDateString(date);
+        const dateStr = toLocalDateString(date);
 
-        if (isPastDate(date) || isWeekend(date) || isSpanishHoliday(date) || blockedDates.includes(dateStr)) return;
+        if (isPastDate(date) || isWeekend(date) || isLocalHoliday(date) || blockedDates.includes(dateStr)) return;
 
         setSelectedDate(date);
         setSelectedTime(null);
@@ -100,13 +100,13 @@ export function Calendar({ onSelect, onBack, currentServiceDuration = 30 }: Cale
                 {Array.from({ length: daysInMonth }).map((_, i) => {
                     const day = i + 1;
                     const date = new Date(year, month, day);
-                    const dateStr = toSpainDateString(date);
+                    const dateStr = toLocalDateString(date);
                     const isSelected = selectedDate && isSameDay(date, selectedDate);
                     const isPast = isPastDate(date);
                     const isWknd = isWeekend(date);
-                    const isHoliday = isSpanishHoliday(date);
+                    const isHoliday = isLocalHoliday(date);
                     const isBlocked = blockedDates.includes(dateStr);
-                    const isToday = isSameDay(date, getSpainNow());
+                    const isToday = isSameDay(date, getLocalNow());
                     const isDisabled = isPast || isWknd || isHoliday || isBlocked;
 
                     return (
@@ -144,7 +144,7 @@ export function Calendar({ onSelect, onBack, currentServiceDuration = 30 }: Cale
                     </h4>
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                         {getSlotsForDate(selectedDate).filter(time => {
-                            const dateStr = toSpainDateString(selectedDate);
+                            const dateStr = toLocalDateString(selectedDate);
                             // 1. Basic Block: Specific manual time block
                             const isManuallyBlocked = timeBlocks.some(block => block.date === dateStr && block.time === time);
                             if (isManuallyBlocked) return false;

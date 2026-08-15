@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useConfig, TeamMember } from '@/context/ConfigContext';
-import { getDaysInMonth, getFirstDayOfMonth, toSpainDateString, getSlotsForDate } from '@/utils/date-helpers';
+import { getDaysInMonth, getFirstDayOfMonth, toLocalDateString, getSlotsForDate } from '@/utils/date-helpers';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 
@@ -28,7 +28,7 @@ export function DateBlocker() {
 
     const handleDayClick = (day: number) => {
         const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-        const dateStr = toSpainDateString(date);
+        const dateStr = toLocalDateString(date);
 
         if (selectedProId === 'global') {
             if (rangeMode) {
@@ -43,7 +43,7 @@ export function DateBlocker() {
                     const rangeDates: string[] = [];
                     const current = new Date(startDate);
                     while (current <= endDate) {
-                        rangeDates.push(toSpainDateString(current));
+                        rangeDates.push(toLocalDateString(current));
                         current.setDate(current.getDate() + 1);
                     }
 
@@ -88,7 +88,7 @@ export function DateBlocker() {
 
     const isBlocked = (day: number) => {
         const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-        const dateStr = toSpainDateString(date);
+        const dateStr = toLocalDateString(date);
 
         if (selectedProId === 'global') {
             return blockedDates.includes(dateStr);
@@ -99,7 +99,7 @@ export function DateBlocker() {
 
     const hasAnyBlock = (day: number) => {
         const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-        const dateStr = toSpainDateString(date);
+        const dateStr = toLocalDateString(date);
 
         const globalBlock = blockedDates.includes(dateStr);
         const proBlock = professionalBlocks.some(b => b.date === dateStr);
@@ -109,7 +109,7 @@ export function DateBlocker() {
     const isInRange = (day: number) => {
         if (!rangeMode || !rangeStart) return false;
         const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-        const dateStr = toSpainDateString(date);
+        const dateStr = toLocalDateString(date);
         return dateStr === rangeStart;
     };
 
@@ -265,7 +265,7 @@ export function DateBlocker() {
                     <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
                         {getSlotsForDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedSlotDay)).map(time => {
                             const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedSlotDay);
-                            const dateStr = toSpainDateString(date);
+                            const dateStr = toLocalDateString(date);
                             const existingBlock = timeBlocks.find(b => b.date === dateStr && b.time === time);
 
                             return (

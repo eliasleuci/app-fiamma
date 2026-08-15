@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useConfig, ProductOrder } from '@/context/ConfigContext';
+import { getCurrentDateString } from '@/utils/date-helpers';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { formatDate } from '@/utils/date-helpers';
@@ -23,13 +24,13 @@ export function ProductManager() {
     const [products, setProducts] = useState([{ productName: '', costPrice: '', sellingPrice: '' }]);
     const [clientName, setClientName] = useState('');
     const [status, setStatus] = useState<'pending' | 'delivered' | 'cancelled'>('pending');
-    const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0]);
+    const [orderDate, setOrderDate] = useState(getCurrentDateString());
 
     const resetForm = () => {
         setProducts([{ productName: '', costPrice: '', sellingPrice: '' }]);
         setClientName('');
         setStatus('pending');
-        setOrderDate(new Date().toISOString().split('T')[0]);
+        setOrderDate(getCurrentDateString());
         setIsAdding(false);
         setEditingOrder(null);
     };
