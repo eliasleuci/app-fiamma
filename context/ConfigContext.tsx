@@ -509,7 +509,17 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
                             createdAt: e.created_at
                         })));
                     }
-                    if (clientProfilesData) setClientProfiles(clientProfilesData);
+                    if (clientProfilesData) {
+                        setClientProfiles(clientProfilesData.map((c: any) => ({
+                            ...c,
+                            privateNotes: c.private_notes,
+                            totalSpent: c.total_spent,
+                            visitCount: c.visit_count,
+                            lastVisit: c.last_visit,
+                            lastServiceName: c.last_service_name,
+                            createdAt: c.created_at
+                        })));
+                    }
                     if (invCategoriesData) setInventoryCategories(invCategoriesData);
                     if (invItemsData) {
                         setInventoryItems(invItemsData.map((i: any) => ({
@@ -786,6 +796,21 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
                 return false;
             } else {
                 setBookings(prev => [booking, ...prev]);
+                
+                // Auto-sync CRM: Create client profile if phone doesn't exist
+                const existingClient = clientProfiles.find(c => c.phone === booking.clientPhone);
+                if (!existingClient) {
+                    addClientProfile({
+                        id: Date.now().toString(),
+                        phone: booking.clientPhone,
+                        name: booking.clientName,
+                        tags: ['Nuevo'],
+                        totalSpent: 0,
+                        visitCount: 0,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+                
                 showNotification('¡Turno guardado con éxito!', 'success');
                 return true;
             }
