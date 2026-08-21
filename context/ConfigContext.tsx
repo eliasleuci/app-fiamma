@@ -248,6 +248,8 @@ interface ConfigContextType {
     showNotification: (message: string, type: 'success' | 'error') => void;
     clearNotification: () => void;
     isLoaded: boolean;
+    importedClients: string[];
+    importClient: (clientKey: string) => Promise<void>;
 }
 
 const DEFAULT_SERVICES: Service[] = [];
@@ -358,6 +360,17 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     const [serviceInventoryCosts, setServiceInventoryCosts] = useState<ServiceInventoryCost[]>([]);
     const [analyticsMetrics, setAnalyticsMetrics] = useState<AnalyticsMetrics | null>(null);
     const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+    const [importedClients, setImportedClients] = useState<string[]>(() => {
+        if (typeof window === 'undefined') return [];
+        const saved = localStorage.getItem('estetica_imported_clients');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) { return []; }
+        }
+        return [];
+    });
 
     const showNotification = (message: string, type: 'success' | 'error') => {
         setNotification({ message, type });
@@ -430,12 +443,20 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
                         const categoryOrderVal = configData.find((c: any) => c.key === 'category_order')?.value;
                         const blockedDatesVal = configData.find((c: any) => c.key === 'blocked_dates')?.value;
                         const productOrdersVal = configData.find((c: any) => c.key === 'product_orders')?.value;
+                        const importedClientsVal = configData.find((c: any) => c.key === 'imported_clients')?.value;
+                        
                         if (adminPinVal) setAdminPin(adminPinVal);
                         if (phoneVal) setBusinessPhone(phoneVal.replace(/\D/g, ''));
                         if (instagramVal) setInstagramLink(instagramVal);
                         if (categoryOrderVal) setCategoryOrder(JSON.parse(categoryOrderVal));
                         if (blockedDatesVal) setBlockedDates(JSON.parse(blockedDatesVal));
                         if (productOrdersVal) setProductOrders(JSON.parse(productOrdersVal));
+                        if (importedClientsVal) {
+                            try {
+                                const parsed = JSON.parse(importedClientsVal);
+                                if (Array.isArray(parsed)) setImportedClients(parsed);
+                            } catch (e) {}
+                        }
                     }
                 }
 
@@ -821,7 +842,15 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-
+    const importClient = async (clientKey: string) => {
+        setImportedClients(prev => {
+            if (prev.includes(clientKey)) return prev;
+            const next = [...prev, clientKey];
+            localStorage.setItem('estetica_imported_clients', JSON.stringify(next));
+            supabase.from('app_config').upsert({ key: 'imported_clients', value: JSON.stringify(next) }, { onConflict: 'key' }).then();
+            return next;
+        });
+    };
 
     const updateBooking = async (booking: Booking): Promise<boolean> => {
         try {
@@ -1285,6 +1314,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
             inventoryItems,
             serviceInventoryCosts,
             analyticsMetrics,
+            importedClients,
+            importClient,
             updateServices,
             updatePhone,
             updateInstagramLink,

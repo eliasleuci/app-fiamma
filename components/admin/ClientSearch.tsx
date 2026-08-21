@@ -8,6 +8,7 @@ import { EditBookingModal } from './EditBookingModal';
 import { ClinicalHistoryModal } from '../staff/ClinicalHistoryModal';
 
 interface ClientData {
+    id: string;
     name: string;
     phone: string;
     totalVisits: number;
@@ -19,7 +20,7 @@ interface ClientData {
 }
 
 export function ClientSearch() {
-    const { bookings, team } = useConfig();
+    const { bookings, team, importedClients, importClient } = useConfig();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
     const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
@@ -41,8 +42,6 @@ export function ClientSearch() {
 
     // Search clients based on query
     const searchResults = useMemo(() => {
-        if (!searchQuery.trim()) return [];
-
         const query = searchQuery.toLowerCase().trim();
         const normalizedQuery = normalizePhone(searchQuery);
 
@@ -50,16 +49,18 @@ export function ClientSearch() {
         const clientMap = new Map<string, ClientData>();
 
         bookings.forEach(booking => {
-            const clientKey = `${booking.clientPhone}_${booking.clientName}`;
-            const normalizedPhone = normalizePhone(booking.clientPhone || '');
+            const phoneStr = booking.clientPhone || '';
+            const clientKey = `${phoneStr.trim()}_${booking.clientName.trim().toLowerCase()}`;
+            const normalizedPhone = normalizePhone(phoneStr);
 
             // Check if booking matches search query
             const matchesName = booking.clientName.toLowerCase().includes(query);
-            const matchesPhone = normalizedPhone.includes(normalizedQuery);
+            const matchesPhone = normalizedQuery ? normalizedPhone.includes(normalizedQuery) : false;
 
-            if (matchesName || matchesPhone) {
+            if (!query || matchesName || matchesPhone) {
                 if (!clientMap.has(clientKey)) {
                     clientMap.set(clientKey, {
+                        id: clientKey,
                         name: booking.clientName,
                         phone: booking.clientPhone,
                         totalVisits: 0,
@@ -107,8 +108,28 @@ export function ClientSearch() {
             client.futureBookings.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         });
 
-        return Array.from(clientMap.values());
-    }, [searchQuery, bookings]);
+        const all = Array.from(clientMap.values());
+        
+        // Divide into detected and imported
+        const detected = all.filter(c => !(importedClients || []).includes(c.id));
+        const imported = all.filter(c => (importedClients || []).includes(c.id));
+
+        const sortClients = (clients: ClientData[]) => clients.sort((a, b) => {
+            if (a.lastVisit && b.lastVisit) {
+                return new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime();
+            }
+            if (a.lastVisit) return -1;
+            if (b.lastVisit) return 1;
+            if (a.futureBookings.length > 0 && b.futureBookings.length === 0) return -1;
+            if (b.futureBookings.length > 0 && a.futureBookings.length === 0) return 1;
+            return b.totalVisits - a.totalVisits;
+        });
+
+        return {
+            detectedClients: sortClients(detected),
+            crmClients: sortClients(imported)
+        };
+    }, [searchQuery, bookings, importedClients]);
 
     const getProfessionalName = (id?: string) => {
         if (!id) return 'Sin Asignar';
@@ -149,16 +170,49 @@ export function ClientSearch() {
                 </p>
             </div>
 
-            {/* Search Results */}
-            {searchQuery.trim() && searchResults.length > 0 && !selectedClient && (
+            {/* Detected Clients Module (Only show when not searching) */}
+            {!searchQuery.trim() && !selectedClient && searchResults.detectedClients.length > 0 && (
+                <div className="mb-10 bg-[#F8F5F2] rounded-2xl border border-[#E8DED5] overflow-hidden">
+                    <div className="p-6 border-b border-[#E8DED5]">
+                        <h3 className="text-xl font-bold text-[#3E2C23]">Clientes Detectados</h3>
+                        <p className="text-[10px] uppercase font-bold tracking-wider text-[#9C8775] mt-1">
+                            HAY {searchResults.detectedClients.length} CLIENTES EN EL HISTORIAL DE TURNOS QUE NO ESTÁN EN EL CRM
+                        </p>
+                    </div>
+                    <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                        {searchResults.detectedClients.map((client, idx) => (
+                            <div key={client.id} className="flex items-center justify-between p-4 border-b border-[#E8DED5] last:border-0 hover:bg-[#FCFAF8] transition-colors">
+                                <div>
+                                    <h4 className="font-bold text-[#3E2C23]">{client.name}</h4>
+                                    <p className="text-xs text-[#9C8775]">
+                                        {client.phone && `${client.phone} • `}{client.totalVisits} visitas
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        importClient(client.id);
+                                    }}
+                                    className="text-[11px] font-bold text-[#B08A57] hover:text-[#8E6D43] transition-colors tracking-widest px-4 py-2"
+                                >
+                                    IMPORTAR
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Search Results / CRM Clients */}
+            {searchResults.crmClients.length > 0 && !selectedClient && (
                 <div className="mb-6">
                     <h3 className="text-sm font-bold text-[#9C8775] uppercase mb-3">
-                        Resultados ({searchResults.length})
+                        {searchQuery.trim() ? `Resultados (${searchResults.crmClients.length})` : `CRM - Clientes (${searchResults.crmClients.length})`}
                     </h3>
-                    <div className="space-y-2">
-                        {searchResults.map((client, idx) => (
+                    <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                        {searchResults.crmClients.map((client, idx) => (
                             <button
-                                key={idx}
+                                key={client.id}
                                 onClick={() => setSelectedClient(client)}
                                 className="w-full text-left p-4 bg-[#FCFAF8] border border-[#E8DED5] rounded-xl hover:border-[#B38A58]/50 hover:shadow-[0_4px_20px_rgba(179,138,88,0.08)] transition-all"
                             >
@@ -179,7 +233,7 @@ export function ClientSearch() {
             )}
 
             {/* No Results */}
-            {searchQuery.trim() && searchResults.length === 0 && (
+            {searchQuery.trim() && searchResults.crmClients.length === 0 && searchResults.detectedClients.length === 0 && (
                 <div className="text-center py-12 bg-stone-50 rounded-xl border-2 border-dashed border-stone-100">
                     <p className="text-stone-400 italic">No se encontraron clientes con ese nombre o teléfono</p>
                 </div>
