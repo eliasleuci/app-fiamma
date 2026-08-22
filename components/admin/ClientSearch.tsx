@@ -170,14 +170,18 @@ export function ClientSearch() {
                 </p>
             </div>
 
-            {/* Detected Clients Module (Only show when not searching) */}
-            {!searchQuery.trim() && !selectedClient && searchResults.detectedClients.length > 0 && (
+            {/* Detected Clients Module */}
+            {!selectedClient && searchResults.detectedClients.length > 0 && (
                 <div className="mb-10 bg-[#F8F5F2] rounded-2xl border border-[#E8DED5] overflow-hidden">
                     <div className="p-6 border-b border-[#E8DED5]">
-                        <h3 className="text-xl font-bold text-[#3E2C23]">Clientes Detectados</h3>
-                        <p className="text-[10px] uppercase font-bold tracking-wider text-[#9C8775] mt-1">
-                            HAY {searchResults.detectedClients.length} CLIENTES EN EL HISTORIAL DE TURNOS QUE NO ESTÁN EN EL CRM
-                        </p>
+                        <h3 className="text-xl font-bold text-[#3E2C23]">
+                            {searchQuery.trim() ? 'Resultados no importados' : 'Clientes Detectados'}
+                        </h3>
+                        {!searchQuery.trim() && (
+                            <p className="text-[10px] uppercase font-bold tracking-wider text-[#9C8775] mt-1">
+                                HAY {searchResults.detectedClients.length} CLIENTES EN EL HISTORIAL DE TURNOS QUE NO ESTÁN EN EL CRM
+                            </p>
+                        )}
                     </div>
                     <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
                         {searchResults.detectedClients.map((client, idx) => (
@@ -193,7 +197,7 @@ export function ClientSearch() {
                                         e.stopPropagation();
                                         importClient(client.id);
                                     }}
-                                    className="text-[11px] font-bold text-[#B08A57] hover:text-[#8E6D43] transition-colors tracking-widest px-4 py-2"
+                                    className="text-[11px] font-bold text-[#B08A57] hover:text-[#8E6D43] transition-colors tracking-widest px-4 py-2 bg-[#F2E8DC] hover:bg-[#E8D5BF] rounded-lg ml-4"
                                 >
                                     IMPORTAR
                                 </button>
@@ -207,7 +211,7 @@ export function ClientSearch() {
             {searchResults.crmClients.length > 0 && !selectedClient && (
                 <div className="mb-6">
                     <h3 className="text-sm font-bold text-[#9C8775] uppercase mb-3">
-                        {searchQuery.trim() ? `Resultados (${searchResults.crmClients.length})` : `CRM - Clientes (${searchResults.crmClients.length})`}
+                        {searchQuery.trim() ? `Resultados en CRM (${searchResults.crmClients.length})` : `CRM - Clientes (${searchResults.crmClients.length})`}
                     </h3>
                     <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                         {searchResults.crmClients.map((client, idx) => (
