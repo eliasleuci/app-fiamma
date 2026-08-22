@@ -1190,11 +1190,19 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
             : 0;
 
         // New clients this month (first booking ever in this month)
-        const allClientPhones = new Set(attendedBookings.filter(b => {
+        const allClientIdentifiers = new Set(attendedBookings.filter(b => {
             const d = new Date(b.date);
             return d < new Date(thisYear, thisMonth, 1);
-        }).map(b => b.clientPhone));
-        const newClientsThisMonth = thisMonthBookings.filter(b => !allClientPhones.has(b.clientPhone)).length;
+        }).map(b => `${b.clientPhone}_${(b.clientName || '').trim().toLowerCase()}`));
+        
+        const newClientKeysThisMonth = new Set();
+        thisMonthBookings.forEach(b => {
+             const key = `${b.clientPhone}_${(b.clientName || '').trim().toLowerCase()}`;
+             if (!allClientIdentifiers.has(key)) {
+                 newClientKeysThisMonth.add(key);
+             }
+        });
+        const newClientsThisMonth = newClientKeysThisMonth.size;
 
         // Top services
         const serviceMap = new Map<string, { revenue: number; count: number }>();
@@ -1241,6 +1249,14 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
             const percent = maxSlots > 0 ? (memberBookings.length / maxSlots) * 100 : 0;
             occupancyByProfessional.push({ name: member.name, percent: Math.min(percent, 100) });
         });
+
+        // Include unassigned bookings in the chart to explain overall occupancy
+        const unassignedBookings = thisMonthBookings.filter(b => !b.professionalId);
+        if (unassignedBookings.length > 0) {
+            const maxSlots = 22 * 8; // Assumed capacity for a single virtual slot
+            const percent = maxSlots > 0 ? (unassignedBookings.length / maxSlots) * 100 : 0;
+            occupancyByProfessional.push({ name: 'Sin Asignar', percent: Math.min(percent, 100) });
+        }
 
         // Occupancy overall
         const totalSlots = teamMembers.length > 0 ? teamMembers.length * 22 * 8 : 22 * 8;
