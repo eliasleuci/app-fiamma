@@ -40,9 +40,11 @@ export function ClientProfileManager() {
     // Enrich client profiles with booking data
     const enrichedClients = useMemo(() => {
         return clientProfiles.map(client => {
-            const clientBookings = bookings.filter(
-                b => b.clientPhone === client.phone || b.clientName === client.name
-            );
+            const clientBookings = bookings.filter(b => {
+                const phoneMatch = client.phone && client.phone.trim() !== '' && b.clientPhone === client.phone;
+                const nameMatch = client.name && client.name.trim() !== '' && b.clientName.trim().toLowerCase() === client.name.trim().toLowerCase();
+                return phoneMatch || nameMatch;
+            });
             const attended = clientBookings.filter(b => b.status === 'attended' || b.status === 'confirmed');
             const totalSpent = attended.reduce((sum, b) => sum + (b.price || 0), 0);
             const visitCount = attended.length;
@@ -159,7 +161,11 @@ export function ClientProfileManager() {
     // Get client bookings for history
     const getClientBookings = (client: ClientProfile): Booking[] => {
         return bookings
-            .filter(b => b.clientPhone === client.phone || b.clientName === client.name)
+            .filter(b => {
+                const phoneMatch = client.phone && client.phone.trim() !== '' && b.clientPhone === client.phone;
+                const nameMatch = client.name && client.name.trim() !== '' && b.clientName.trim().toLowerCase() === client.name.trim().toLowerCase();
+                return phoneMatch || nameMatch;
+            })
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     };
 
