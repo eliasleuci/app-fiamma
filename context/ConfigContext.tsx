@@ -818,19 +818,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
             } else {
                 setBookings(prev => [booking, ...prev]);
                 
-                // Auto-sync CRM: Create client profile if phone doesn't exist
-                const existingClient = clientProfiles.find(c => c.phone === booking.clientPhone);
-                if (!existingClient) {
-                    addClientProfile({
-                        id: Date.now().toString(),
-                        phone: booking.clientPhone,
-                        name: booking.clientName,
-                        tags: ['Nuevo'],
-                        totalSpent: 0,
-                        visitCount: 0,
-                        createdAt: new Date().toISOString()
-                    });
-                }
+                // Removed Auto-sync CRM to allow manual import from Clientes Detectados
                 
                 showNotification('¡Turno guardado con éxito!', 'success');
                 return true;

@@ -56,12 +56,12 @@ export function ClientProfileManager() {
 
     // Auto-detect clients from bookings that are not in CRM
     const unregisteredClients = useMemo(() => {
-        const registeredPhones = new Set(clientProfiles.map(c => c.phone));
+        const registeredKeys = new Set(clientProfiles.map(c => `${c.phone}_${(c.name || '').trim().toLowerCase()}`));
         const clientMap = new Map<string, { name: string; phone: string; visits: number; spent: number; lastDate: string }>();
 
         bookings.filter(b => b.status === 'attended' || b.status === 'confirmed').forEach(b => {
-            if (registeredPhones.has(b.clientPhone)) return;
-            const key = b.clientPhone;
+            const key = `${b.clientPhone}_${(b.clientName || '').trim().toLowerCase()}`;
+            if (registeredKeys.has(key)) return;
             if (!clientMap.has(key)) {
                 clientMap.set(key, { name: b.clientName, phone: b.clientPhone, visits: 0, spent: 0, lastDate: b.date });
             }
