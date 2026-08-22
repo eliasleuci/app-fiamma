@@ -74,8 +74,18 @@ export function ClientProfileManager() {
             }
         });
 
-        return Array.from(clientMap.values()).sort((a, b) => b.visits - a.visits);
-    }, [clientProfiles, bookings]);
+        let results = Array.from(clientMap.values()).sort((a, b) => b.visits - a.visits);
+
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            results = results.filter(c =>
+                c.name.toLowerCase().includes(query) ||
+                c.phone.includes(query)
+            );
+        }
+
+        return results;
+    }, [clientProfiles, bookings, searchQuery]);
 
     // Birthday alerts
     const upcomingBirthdays = useMemo(() => {
@@ -296,14 +306,18 @@ export function ClientProfileManager() {
             </div>
 
             {/* Unregistered Clients Alert */}
-            {unregisteredClients.length > 0 && !searchQuery && !filterTag && (
+            {unregisteredClients.length > 0 && !filterTag && (
                 <div className="mb-6 rounded-2xl bg-gradient-to-r from-stone-50 to-white border border-stone-200 overflow-hidden shadow-sm">
                     <div className="bg-stone-100/50 px-5 py-4 border-b border-stone-200 flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-bold text-stone-800">Clientes Detectados</p>
-                            <p className="text-[10px] font-medium text-stone-500 uppercase tracking-tighter mt-0.5">
-                                Hay {unregisteredClients.length} cliente{unregisteredClients.length > 1 ? 's' : ''} en el historial de turnos que no están en el CRM
+                            <p className="text-sm font-bold text-stone-800">
+                                {searchQuery.trim() ? 'Resultados no importados' : 'Clientes Detectados'}
                             </p>
+                            {!searchQuery.trim() && (
+                                <p className="text-[10px] font-medium text-stone-500 uppercase tracking-tighter mt-0.5">
+                                    Hay {unregisteredClients.length} cliente{unregisteredClients.length > 1 ? 's' : ''} en el historial de turnos que no están en el CRM
+                                </p>
+                            )}
                         </div>
                     </div>
                     <div className="p-2">
